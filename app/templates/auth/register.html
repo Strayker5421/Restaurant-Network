@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<p>Sign up</p>
+<form method="post" action="{{ url_for('auth.register') }}">
+    {{ form.hidden_tag() }}
+    <div><input class="form-control" type="text" name="username" placeholder="Username"></div>
+    <div><input class="form-control" type="email" name="email" placeholder="Email"></div>
+    <div><input class="form-control" type="password" name="password" placeholder="Password"></div>
+    <div><input class="form-control" type="password" name="password2" placeholder="Repeat Password"></div>
+    <div><button type="submit" name="submit">Sign up</button></div>
+    <p>Already have an account?&nbsp;<a href="{{ url_for('auth.login') }}">Log in</a></p>
+</form>
+{% endblock %}

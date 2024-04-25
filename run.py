@@ -1,6 +1,6 @@
-from app import create_app  # , db
+from app import create_app, db
 
-# from app.models import User, Post, ChatMessage, Notification, Chat
+from app.models import User
 
 
 app = create_app()
