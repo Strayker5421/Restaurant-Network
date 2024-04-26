@@ -17,7 +17,18 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+class Restaurant(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255),unique=True, nullable=False)
+    image = db.Column(db.Text)
+    status = db.Column(db.Boolean, default=False)
 
+class Menu(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255),unique=True, nullable=False)
+    image = db.Column(db.Text)
+    status = db.Column(db.Boolean, default=False)
 
 @login.user_loader
 def load_user(user_id):
