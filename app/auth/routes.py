@@ -17,6 +17,8 @@ def login():
         if user is None or not user.check_password(form.password.data):
             flash("Invalid username or password")
             return redirect(url_for("auth.login"))
+        if user.role:
+            return redirect(url_for("main.administrator"))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get("next")
         if not next_page or urlsplit(next_page).netloc != "":
@@ -44,8 +46,3 @@ def register():
         flash("Congratulations, you are now a registered user!")
         return redirect(url_for("auth.login"))
     return render_template("auth/register.html", title="Register", form=form)
-
-@bp.route('/administrator',methods=['POST' ,'GET'])
-def administrator():
-
-    return render_template('administrator.html')

@@ -8,6 +8,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(256))
+    role = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -17,18 +18,25 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
-    
+
+
 class Restaurant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255),unique=True, nullable=False)
-    image = db.Column(db.Text)
+    name = db.Column(db.String(255), unique=True, nullable=False)
+    image_path = db.Column(db.Text)
     status = db.Column(db.Boolean, default=False)
+    menus = db.relationship(
+        "Menu", backref="restaurant", lazy="dynamic", cascade="all, delete-orphan"
+    )
+
 
 class Menu(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255),unique=True, nullable=False)
-    image = db.Column(db.Text)
+    name = db.Column(db.String(255), unique=True, nullable=False)
+    image_path = db.Column(db.Text)
     status = db.Column(db.Boolean, default=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"))
+
 
 @login.user_loader
 def load_user(user_id):
