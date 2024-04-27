@@ -10,7 +10,7 @@ import logging
 @bp.route("/index", methods=["GET", "POST"])
 @login_required
 def index():
-    return "Hello, World!"
+    return render_template("index.html")
 
 
 @bp.route("/administrator", methods=["POST", "GET"])
