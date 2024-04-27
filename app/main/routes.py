@@ -12,7 +12,13 @@ from sqlalchemy import  or_ , cast,VARCHAR
 @bp.route("/index", methods=["GET", "POST"])
 @login_required
 def index():
-    return render_template("index.html")
+    restaurants = Restaurant.query.all()
+    return render_template("index.html",restaurants=restaurants)
+
+@bp.route('/menu/<int:menu_id>')
+def menu_detail(menu_id):
+    menu = Menu.query.get(menu_id)
+    return render_template('menu_detail.html', menu=menu)
 
 
 @bp.route("/administrator", methods=["POST", "GET"])
