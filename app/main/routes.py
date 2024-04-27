@@ -12,7 +12,7 @@ from sqlalchemy import  or_ , cast,VARCHAR
 @bp.route("/index", methods=["GET", "POST"])
 @login_required
 def index():
-    return "Hello, World!"
+    return render_template("index.html")
 
 
 @bp.route("/administrator", methods=["POST", "GET"])
