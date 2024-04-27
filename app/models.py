@@ -35,6 +35,7 @@ class Menu(db.Model):
     name = db.Column(db.String(255), unique=True, nullable=False)
     image_path = db.Column(db.Text)
     status = db.Column(db.Boolean, default=False)
+    price = db.Column(db.Integer)
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"))
 
 
