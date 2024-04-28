@@ -1,8 +1,26 @@
 {% extends "base.html" %}
 
 {% block app_content %}
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search restaurant</title>
+    <link rel="stylesheet" href="/static/assets/css/bootstrap.min.css">
+    <style>
+        .custom-card-border {
+            border: 2px solid #e0e0e0;  
+            border-radius: 10px;  
+            cursor: pointer; 
+        }
+        .restaurant-card {
+            transition: transform 0.2s;  
+        }
+        .restaurant-card:hover {
+            transform: scale(1.05); 
+        }
+    </style>
 </head>
 <body>
     <header class="d-flex justify-content-center mt-4">
@@ -14,9 +32,9 @@
             {% for restaurant in restaurants %}
             <div class="col-md-4">
                 {% if restaurant.status %}
-                    <a href="{{ url_for('main.menu_detail', restaurant_id=restaurant.id) }}" class="text-decoration-none text-dark">
+                <a href="{{ url_for('main.menu_detail', restaurant_id=restaurant.id) }}" class="text-decoration-none text-dark">
                 {% else %}
-                    <div class="text-dark">
+                <div class="text-dark">
                 {% endif %}
                     <div class="card custom-card-border mb-4 shadow restaurant-card">
                         <img src="{{ url_for('static', filename='images/restaurants/' + restaurant.name.lower().replace(' ', '_') + '.jpg') }}" class="card-img-top" alt="{{ restaurant.name }}">
@@ -25,17 +43,16 @@
                             <p class="card-text">{{ "Open" if restaurant.status else "Closed" }}</p>
                         </div>
                     </div>
-                </div>
+                {% if restaurant.status %}
                 </a>
+                {% else %}
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
     </div>
 
-    <script>
-        function redirectToMenu(menuUrl) {
-            window.location.href = menuUrl;
-        }
-    </script>
 </body>
+</html>
 {% endblock %}
