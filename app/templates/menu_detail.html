@@ -1,31 +1,13 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<!DOCTYPE html>
-<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu Detail</title>
-    <link rel="stylesheet" href="/static/assets/css/bootstrap.min.css">
-    <style>
-        .custom-card-border {
-            border: 2px solid #e0e0e0;  
-            border-radius: 10px;  
-        }
-        .menu-item-card {
-            transition: transform 0.2s; 
-        }
-        .menu-item-card:hover {
-            transform: scale(1.05);  
-        }
-    </style>
 </head>
 <body>
     <header class="d-flex justify-content-center mt-4">
         <input type="text" class="form-control w-50" id="searchInput" placeholder="Search for menu items...">
     </header>
-
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8 text-center">
@@ -46,14 +28,6 @@
             </div>
             {% endfor %}
         </div>
-    </div>  
-
-    <script>
-        function redirectToMenu(menuUrl) {
-            window.location.href = menuUrl;
-        }
-    </script>
-
+    </div>
 </body>
-</html>
 {% endblock %}

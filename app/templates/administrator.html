@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/assets/css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
 
     <title>Administrator Interface</title>
 </head>
@@ -149,7 +147,7 @@
                     <label for="MenuItemIdToModifyPrice">Menu item ID:</label>
                     <input type="number" id="MenuItemIdToModifyPrice" placeholder="Enter  menu item ID" required min="1">
 
-                    <label for="NewMenuItemPriceChange">Menu item price:</label>
+                    <label for="NewMenuItemPrice">Menu item price:</label>
                     <input type="number" id="NewMenuItemPrice" placeholder="Enter menu item price" required min="0">
         
                     <input type="submit" value="Change price menu item">
@@ -422,10 +420,9 @@ function deleteRestaurant(RestaurantIdToDelete) {
         });
 }
 
-    document.getElementById('addRestaurantForm').addEventListener('submit', function (event) {
-    event.preventDefault();  
-    
-    // Получаем значения из формы
+document.getElementById('addRestaurantForm').addEventListener('submit', function (event) {
+event.preventDefault();
+// Получаем значения из формы
 const RestaurantName = document.getElementById('RestaurantName').value;
 const Status = document.getElementById('Status').value;
 const Image = document.getElementById('Image').value;
@@ -757,7 +754,7 @@ function searchRestaurants(searchQuery) {
     axios.get(`/search_restaurants?search_query=${searchQuery}`)
         .then(response => {
             const restaurants = response.data; // Изменено на restaurants
-            const searchResultsContainer = document.getElementById('searchResultsContainer'); // Изменено на searchResultsContainer
+            const searchResultsContainer = document.getElementById('searchResults'); // Изменено на searchResultsContainer
             const table = document.createElement('table');
             table.border = '1';
 
