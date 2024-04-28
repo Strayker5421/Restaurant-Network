@@ -5,7 +5,8 @@ from app.models import User, Menu, Restaurant
 from app.main import bp
 import logging
 from werkzeug.security import generate_password_hash
-from sqlalchemy import  or_ , cast,VARCHAR
+from sqlalchemy import  or_ , cast
+from sqlalchemy.types import String
 
 
 @bp.route("/", methods=["GET", "POST"])
@@ -18,7 +19,7 @@ def index():
 @bp.route('/menu/<int:restaurant_id>')
 def menu_detail(restaurant_id):
     restaurant = Restaurant.query.get(restaurant_id)
-    menus = restaurant.menus.all()  # Получаем все меню для этого ресторана
+    menus = restaurant.menus.all()  
     return render_template('menu_detail.html', restaurant=restaurant, menus=menus)
 
 
@@ -30,7 +31,6 @@ def administrator():
 @bp.route("/delete_all_data", methods=["POST"])
 def delete_all_data():
     try:
-        # Удаление данных из каждой таблицы
         db.session.query(User).delete()
         db.session.query(Menu).delete()
         db.session.query(Restaurant).delete()

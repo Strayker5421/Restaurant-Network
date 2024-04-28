@@ -757,7 +757,7 @@ function searchRestaurants(searchQuery) {
     axios.get(`/search_restaurants?search_query=${searchQuery}`)
         .then(response => {
             const restaurants = response.data; // Изменено на restaurants
-            const searchResultsContainer = document.getElementById('searchResultsContainer'); // Изменено на searchResultsContainer
+            const searchResultsContainer = document.getElementById('searchResults'); // Изменено на searchResultsContainer
             const table = document.createElement('table');
             table.border = '1';
 
