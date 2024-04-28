@@ -15,10 +15,11 @@ def index():
     restaurants = Restaurant.query.all()
     return render_template("index.html",restaurants=restaurants)
 
-@bp.route('/menu/<int:menu_id>')
-def menu_detail(menu_id):
-    menu = Menu.query.get(menu_id)
-    return render_template('menu_detail.html', menu=menu)
+@bp.route('/menu/<int:restaurant_id>')
+def menu_detail(restaurant_id):
+    restaurant = Restaurant.query.get(restaurant_id)
+    menus = restaurant.menus.all()  # Получаем все меню для этого ресторана
+    return render_template('menu_detail.html', restaurant=restaurant, menus=menus)
 
 
 @bp.route("/administrator", methods=["POST", "GET"])

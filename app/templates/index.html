@@ -32,7 +32,7 @@
             {% for restaurant in restaurants %}
             <div class="col-md-4">
                 {% if restaurant.status %}
-                <a href="{{ url_for('main.menu_detail', menu_id=restaurant.menus.first().id) }}" class="text-decoration-none text-dark">
+                <a href="{{ url_for('main.menu_detail', restaurant_id=restaurant.id) }}" class="text-decoration-none text-dark">
                 {% else %}
                 <div class="text-dark">
                 {% endif %}

@@ -27,28 +27,33 @@
     </header>
 
     <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h1 class="restaurant-name">{{ restaurant.name }}</h1>
+            </div>
+        </div>
         <div class="row">
-            <div class="col-md-6 offset-md-3">
+            {% for menu in menus %}
+            <div class="col-md-4 mb-4">
                 <div class="card custom-card-border">
+                    <img src="{{ url_for('static', filename='images/menu/' + menu.name.lower().replace(' ', '_') + '.jpg') }}" class="card-img-top" alt="{{ menu.name }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ menu.name }}</h5>
                         <p class="card-text">Price: ${{ menu.price }}</p>
                         <p class="card-text">Status: {{ "Available" if menu.status else "Not Available" }}</p>
-                        <img src="{{ url_for('static', filename='images/menu/' + menu.name.lower().replace(' ', '_') + '.jpg') }}" class="card-img-top" alt="{{ menu.name }}">
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-    </div>
+    </div>  
 
     <script>
         function redirectToMenu(menuUrl) {
             window.location.href = menuUrl;
         }
+    </script>
 
-        console.log("Путь к изображению:", document.getElementById("menuImage").src);
-    </script>
-    </script>
 </body>
 </html>
 {% endblock %}
