@@ -2,25 +2,11 @@ from flask import jsonify, request, render_template
 from flask_login import current_user, login_required
 from app import db
 from app.models import User, Menu, Restaurant
-from app.main import bp
+from app.admin import bp
 import logging
 from werkzeug.security import generate_password_hash
-from sqlalchemy import  or_ , cast,VARCHAR
-
-
-@bp.route("/", methods=["GET", "POST"])
-@bp.route("/index", methods=["GET", "POST"])
-@login_required
-def index():
-    restaurants = Restaurant.query.all()
-    return render_template("index.html", restaurants=restaurants)
-
-
-@bp.route("/menu/<int:restaurant_id>")
-def menu_detail(restaurant_id):
-    restaurant = Restaurant.query.get(restaurant_id)
-    menus = restaurant.menus.all()  # Получаем все меню для этого ресторана
-    return render_template('menu_detail.html', restaurant=restaurant, menus=menus)
+from sqlalchemy import or_, cast
+from sqlalchemy.types import String
 
 
 @bp.route("/administrator", methods=["POST", "GET"])
@@ -94,7 +80,7 @@ def change_status_restaurant():
             return jsonify({"error": "Invalid request data"}), 400
 
         # Преобразование строкового значения 'active' в булево значение True
-        if new_status.lower() == 'active':
+        if new_status.lower() == "active":
             new_status = True
         else:
             new_status = False
@@ -138,6 +124,7 @@ def delete_restaurant():
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
+
 @bp.route("/delete_all_restaurants", methods=["POST"])
 def delete_all_restaurants():
     Restaurants = Restaurant.query.all()
@@ -145,6 +132,7 @@ def delete_all_restaurants():
         db.session.delete(Restaurant_delete)
     db.session.commit()
     return jsonify({"message": "All restaurants deleted successfully"})
+
 
 @bp.route("/add_restaurant", methods=["POST"])
 def add_restaurant():
@@ -185,6 +173,7 @@ def add_restaurant():
         # Возвращаем более информативный JSON-ответ
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
+
 @bp.route("/add_menu_item", methods=["POST"])
 def add_menu_item():
     try:
@@ -208,7 +197,7 @@ def add_menu_item():
             image_path=MenuItemImageURL,
             price=MenuItemPrice,
             status=True if Status == "Active" else False,
-            menu_id=MenuIdForRestaurant
+            restaurant_id=MenuIdForRestaurant,
         )
         db.session.add(new_menu)
         db.session.commit()
@@ -224,7 +213,6 @@ def add_menu_item():
 @bp.route("/change_price_item", methods=["POST"])
 def change_price_item():
     data = request.json
-    menu_id = data.get("menu_id")
     menu_id = data.get("menu_id")
     new_price = data.get("new_price")
 
@@ -243,55 +231,61 @@ def change_price_item():
 
     return jsonify({"error": "Restaurant not found"}), 404
 
-@bp.route('/hash_password', methods=['POST'])
+
+@bp.route("/hash_password", methods=["POST"])
 def hash_password():
     data = request.json
-    password = data.get('password')
+    password = data.get("password")
 
     if not password:
-        return jsonify({'error': 'No password provided'}), 400
+        return jsonify({"error": "No password provided"}), 400
 
     hashed_password = generate_password_hash(password)
 
-    return jsonify({'hashedPassword': hashed_password}), 200
-  
-@bp.route('/add_user', methods=['POST'])
+    return jsonify({"hashedPassword": hashed_password}), 200
+
+
+@bp.route("/add_user", methods=["POST"])
 def add_user():
     data = request.json
-    username = data.get('username')
-    email = data.get('email')
-    password_hash = data.get('password_hash')
-    role = data.get('role')
+    username = data.get("username")
+    email = data.get("email")
+    password_hash = data.get("password_hash")
+    role = data.get("role")
     print(username)
     print(password_hash)
     role_bool = True if role == "Administrator" else False
     try:
-        new_user = User(username=username, email=email, password_hash=password_hash, role=role_bool)
+        new_user = User(
+            username=username, email=email, password_hash=password_hash, role=role_bool
+        )
         db.session.add(new_user)
         db.session.commit()
         logging.info(f"User added: {new_user}")
-        return jsonify({'message': 'User added successfully'})
+        return jsonify({"message": "User added successfully"})
     except Exception as e:
         error_message = f"Error adding user: {str(e)}"
         logging.error(error_message)
-        return jsonify({'error': error_message}), 500
-    
-@bp.route('/delete_user', methods=['POST'])
+        return jsonify({"error": error_message}), 500
+
+
+@bp.route("/delete_user", methods=["POST"])
 def delete_user():
     try:
         data = request.json
-        user_id = data.get('user_id')
-        
+        user_id = data.get("user_id")
+
         user_to_delete = User.query.get(user_id)
         if user_to_delete:
             db.session.delete(user_to_delete)
             db.session.commit()
-            return jsonify({'message': 'User deleted successfully'})
+            return jsonify({"message": "User deleted successfully"})
         else:
-            return jsonify({'error': 'User not found'}), 404
+            return jsonify({"error": "User not found"}), 404
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
+        return jsonify({"error": str(e)}), 500
+
+
 @bp.route("/change_name_item", methods=["POST"])
 def change_name_item():
     data = request.json
@@ -337,6 +331,7 @@ def change_imege_item():
 
     return jsonify({"error": "Restaurant not found"}), 404
 
+
 @bp.route("/change_status_item", methods=["POST"])
 def change_status_item():
     try:
@@ -349,7 +344,7 @@ def change_status_item():
             return jsonify({"error": "Invalid request data"}), 400
 
         # Преобразование строкового значения 'active' в булево значение True
-        if new_status.lower() == 'active':
+        if new_status.lower() == "active":
             new_status = True
         else:
             new_status = False
@@ -366,9 +361,9 @@ def change_status_item():
     except Exception as e:
         logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
-    
 
-@bp.route('/fetch_restaurants', methods=['GET'])
+
+@bp.route("/fetch_restaurants", methods=["GET"])
 def fetch_restaurants():
     try:
         restaurants = Restaurant.query.order_by(Restaurant.id).all()
@@ -377,32 +372,49 @@ def fetch_restaurants():
         Restaurant_data = []
         for restaurant in restaurants:
             restaurant_data = {
-                'id': restaurant.id,
-                'name': restaurant.name,
-                'image': restaurant.image_path,
-                'status': restaurant.status
+                "id": restaurant.id,
+                "name": restaurant.name,
+                "image": restaurant.image_path,
+                "status": restaurant.status,
             }
             Restaurant_data.append(restaurant_data)
 
         return jsonify(Restaurant_data)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
+        return jsonify({"error": str(e)}), 500
+
 
 def get_restaurant_by_search_query(search_query):
-    query = Restaurant.query.filter(
-        or_(
-            Restaurant.name.ilike(f'%{search_query}%'),
-            cast(Restaurant.id, VARCHAR).ilike(f'%{search_query}%'),
-            Restaurant.status.ilike(f'%{search_query}%')
+    if (
+        search_query == "true"
+        or search_query == "false"
+        or search_query == "True"
+        or search_query == "False"
+    ):
+        query = Restaurant.query.filter(cast(Restaurant.status, String) == search_query)
+    else:
+        query = Restaurant.query.filter(
+            or_(
+                Restaurant.name.ilike(f"%{search_query}%"),
+                cast(Restaurant.id, String).ilike(f"%{search_query}%"),
+            )
         )
-    )
+
     return query.order_by(Restaurant.id).all()
 
-@bp.route('/search_restaurants')
+
+@bp.route("/search_restaurants")
 def search_restaurants():
-    search_query = request.args.get('search_query', '')
+    search_query = request.args.get("search_query", "")
     restaurants = get_restaurant_by_search_query(search_query)
     # Преобразование результатов в формат JSON и возврат
-    restaurants_data = [{'id': restaurant.id, 'name': restaurant.name, 'image': restaurant.image_path,  'status': restaurant.status} for restaurant in restaurants]
+    restaurants_data = [
+        {
+            "id": restaurant.id,
+            "name": restaurant.name,
+            "image": restaurant.image_path,
+            "status": restaurant.status,
+        }
+        for restaurant in restaurants
+    ]
     return jsonify(restaurants_data)
