@@ -19,18 +19,25 @@
                     </svg>
                 </span>
                 <span>ResOs</span>
-            </a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            </a>
+            <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-1">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Home</a></li>
-                </ul>
-                <ul class="navbar-nav navbar-right">
-                    {% if current_user.is_anonymous %}
+                {% if current_user.is_anonymous %}
+                    <ul class="navbar-nav ms-auto">
                         <li><a class="btn btn-primary shadow" role="button" href="{{ url_for('auth.login') }}">Login</a></li>
-                    {% else %}
-                        <li><a class="btn btn-primary shadow" role="button" href="{{ url_for('auth.logout') }}">Logout</a></li>
-                    {% endif %}
+                    </ul>
+                {% else %}
+                    <ul class="navbar-nav ms-auto">
+                        <li>
+                            <form action="{{ url_for('main.search') }}" method="get">
+                                <input type="text" class="form-control" id="searchInput" name="q" placeholder="Search for restaurants..." required>
+                            </form>
+                        </li>
+                    </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li><a class="btn btn-primary shadow" role="button" href="{{ url_for('auth.logout') }}">Logout</a></li>
                 </ul>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -47,7 +54,7 @@
             {% block app_content %}{% endblock %}
         </div>
     {% endblock %}
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="assets/js/script.min.js"></script>
+    <script src="/static/assets/js/bootstrap.min.js"></script>
+    <script src="/static/assets/js/script.min.js"></script>
 </body>
 </html>

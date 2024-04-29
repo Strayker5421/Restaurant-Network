@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/assets/css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
 
     <title>Administrator Interface</title>
@@ -18,6 +19,7 @@
         <button onclick="openTab('session')">Session</button>
         <button onclick="openTab('restaurant')">Restaurant</button>
         <button onclick="openTab('menu')">Menu</button>
+        <button onclick="openTab('dish')">Dish</button>
         <button onclick="openTab('users')">Users</button>
     </div>
     
@@ -33,29 +35,26 @@
         </div>
     </div>
     
-
     <div id="restaurant" class="tab-content">
-        <!-- Sub-tabs for the "Orders" tab -->
         <div class="sub-tabs" id="restaurantSubTabs">
-            <button onclick="openSubTab('viewRestaurants')">View</button>
-            <button onclick="openSubTab('searchRestaurant')">Search</button>
-            <button onclick="openSubTab('changeStatusRestaurant')">Change Status</button>
-            <button onclick="openSubTab('deleteRestaurant')">Delete</button>
-            <button onclick="openSubTab('addRestaurant')">Add</button>
+            <button onclick="openSubTab('viewRestaurants')">View restaurants</button>
+            <button onclick="openSubTab('searchRestaurant')">Search restaurant</button>
+            <button onclick="openSubTab('changeStatusRestaurant')">Change status restaurant</button>
+            <button onclick="openSubTab('deleteRestaurant')">Delete restaurant</button>
+            <button onclick="openSubTab('addRestaurant')">Add restaurant</button>
         </div>
-        <!-- Content of sub-tabs for the "Orders" tab -->
+
         <div id="viewRestaurants" class="sub-tab-content">
             <button onclick="loadRestaurant()">Load Restaurants</button>
         </div>
 
         <div id="searchRestaurant" class="sub-tab-content">
-            <!-- Code for searching orders by parameters -->
+           
             <form id="searchForm">
                 <input type="text" id="searchQuery" placeholder="Search by restaurants parameters" required>
                 <input type="submit" value="Search">
             </form>
             
-            <!-- Content for displaying search results ОШИБКА  sub-tab-content -->
             <div id="searchResults"></div>
         </div>
 
@@ -66,8 +65,8 @@
                 
                     <label for="newStatus">New Status:</label>
                     <select id="newStatus" required>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
+                        <option value="Open">Open</option>
+                        <option value="Close">Close</option>
                     </select>
             
                     <input type="submit" value="Change Status">
@@ -82,151 +81,210 @@
             </form>
         </div>
         <div id="addRestaurant" class="sub-tab-content">
-            <form id="addRestaurantForm">
+            <form id="addRestaurantForm" method="post" enctype="multipart/form-data">
                 <label for="RestaurantName">Restaurant Name:</label>
                 <input type="text" id="RestaurantName" placeholder="Enter restaurant name" required>
 
                 <label for="Status">Status:</label>
                 <select id="Status" required>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
+                    <option value="Open">Open</option>
+                    <option value="Close">Close</option>
                 </select>
 
-                <label for="Image">Restaurant Image:</label>
-                <input type="text" id="Image" name="Restaurant_image" placeholder="URL or path">
-        
+                <label for="RestaurantImage">Restaurant Image:</label>
+                <input type="file" id="RestaurantImage" name="Restaurant_image" multiple>
+
                 <input type="submit" value="Add Restaurant">
             </form>
         </div>
     </div>
 
-    <div id="menu" class="tab-content">
-        <!-- Sub-tabs for the "Products" tab -->
-        <div class="sub-tabs" id="menuSubTabs">
-            <button onclick="openSubTab('AddMenuItem')">Add menu item</button>
-            <button onclick="openSubTab('ChangePriceItem')">Change price menu item</button>
-            <button onclick="openSubTab('ChangeNameItem')">Change name menu item</button>
-            <button onclick="openSubTab('ChangeImage')">Change image menu item</button>
-            <button onclick="openSubTab('DeleteMenuItem')">Delete menu item</button>
-            <button onclick="openSubTab('ChangeStatuseItem')">Change status menu item</button>
+    <div id="dish" class="tab-content">
+        <div class="sub-tabs" id="dishSubTabs">
+            <button onclick="openSubTab('AddDish')">Add dish</button>
+            <button onclick="openSubTab('viewDish')">View dishes</button>
+            <button onclick="openSubTab('searchDish')">Search dish</button>
+            <button onclick="openSubTab('ChangePriceItem')">Change price dish</button>
+            <button onclick="openSubTab('ChangeIngredients')">Change ingredients</button>
+            <button onclick="openSubTab('ChangeNameItem')">Change name dish</button>
+            <button onclick="openSubTab('ChangeImage')">Change image dish</button>
+            <button onclick="openSubTab('DeleteDish')">Delete dish</button>
+        </div>
+
+        <div id="viewDish" class="sub-tab-content">
+            <button onclick="loadRestaurant()">Load Restaurants</button>
+        </div>
+
+        <div id="searchDish" class="sub-tab-content">
+           
+            <form id="searchForm">
+                <input type="text" id="searchQuery" placeholder="Search by dish parameters" required>
+                <input type="submit" value="Search">
+            </form>
+            
+            <div id="searchResults"></div>
         </div>
     
-        <!-- Content of sub-tabs for the "Products" tab -->
-        <div id="AddMenuItem" class="sub-tab-content">
-            <!-- Form for adding a product -->
-            <form id="AddMenuItemForm">
+        <div id="AddDish" class="sub-tab-content">
+            <form id="addDishItemForm">
 
-                <label for="MenuIdForRestaurant">Restautant ID:</label>
-                <input type="text" id="MenuIdForRestaurant" placeholder="Enter product ID" required>
+                <label for="DishIdForMenu">Menu ID:</label>
+                <input type="text" id="DishIdForMenu" placeholder="Enter menu ID" required>
 
-                <label for="MenuItemName">Menu item name:</label>
-                <input type="text" id="MenuItemName" placeholder="Enter menu item name" required>
+                <label for="DishItemName">Dish name:</label>
+                <input type="text" id="DishItemName" placeholder="Enter dish name" required>
+                
+                <label for="DishItemIngredients">Dish ingridients:</label>
+                <input type="text" id="DishItemIngredients" placeholder="Enter dish ingredients" required>
 
-                <label for="MenuItemPrice">Menu item price:</label>
-                <input type="number" id="MenuItemPrice" placeholder="Enter menu item price" required min="0">
+                <label for="DishItemPrice">Dish price:</label>
+                <input type="number" id="DishItemPrice" placeholder="Enter dish price" required min="0">
     
-                <label for="MenuItemImageURL">Image URL:</label>
-                <input type="text" id="MenuItemImageURL" placeholder="Enter image URL" required>
+                <label for="DishItemImageURL">Image URLs:</label>
+                <input type="file" id="DishItemImageURL" name="Dish_images">
 
-                <label for="Status">Status:</label>
-                <select id="Status" required>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                </select>
-    
-                <input type="submit" value="Add menu item">
+                <input type="submit" value="Add dish">
             </form>
         </div>
 
             <div id="ChangePriceItem" class="sub-tab-content">
                 <form id="ChangePriceItemForm">
 
-                    <label for="MenuIdForRestaurantPrice">Restautant ID:</label>
-                    <input type="number" id="MenuIdForRestaurantPrice" placeholder="Enter product ID" required min ="1">
+                    <label for="DishIDToModPrice">Dish ID:</label>
+                    <input type="number" id="DishIDToModPrice" placeholder="Enter dish ID" required min="1">
 
-                    <label for="MenuItemIdToModifyPrice">Menu item ID:</label>
-                    <input type="number" id="MenuItemIdToModifyPrice" placeholder="Enter  menu item ID" required min="1">
-
-                    <label for="NewMenuItemPrice">Menu item price:</label>
-                    <input type="number" id="NewMenuItemPrice" placeholder="Enter menu item price" required min="0">
+                    <label for="NewDishPrice">Dish price:</label>
+                    <input type="number" id="NewDishPrice" placeholder="Enter dish price" required min="0">
         
-                    <input type="submit" value="Change price menu item">
+                    <input type="submit" value="Change price dish">
+                </form>
+            </div>
+
+            <div id="ChangeIngredients" class="sub-tab-content">
+                <form id="ChangeIngredientsForm">
+
+                    <label for="DishIDToModIngredients">Dish ID:</label>
+                    <input type="number" id="DishIDToModIngredients" placeholder="Enter dish ID" required min="1">
+
+                    <label for="NewDishIngredients">Dish ingredients:</label>
+                    <input type="text" id="NewDishIngredients" placeholder="Enter dish ingredients" required min="0">
+        
+                    <input type="submit" value="Change ingredients dish">
                 </form>
             </div>
 
         <div id="ChangeNameItem" class="sub-tab-content">
-            <form id="ChangeNameItemForm">
+            <form id="ChangeNameItemForm" method="post" enctype="multipart/form-data">
 
-                <label for="MenuIdForRestaurantName">Restautant ID:</label>
-                <input type="number" id="MenuIdForRestaurantName" placeholder="Enter product ID" required>
-
-                <label for="MenuItemIdToModifyName">Menu item ID:</label>
-                <input type="number" id="MenuItemIdToModifyName" placeholder="Enter  menu item ID" required min="1">
+                <label for="DishIdToModName">Dish item ID:</label>
+                <input type="number" id="DishIdToModName" placeholder="Enter dish ID" required min="1">
     
                 <label for="NameToModify">Name:</label>
-                <input type="text" id="NameToModify" placeholder="Enter menu item name" required>
+                <input type="text" id="NameToModify" placeholder="Enter dish name" required>
     
-                <input type="submit" value="Change name menu item">
+                <input type="submit" value="Change name dish">
             </form>
         </div>
 
         <div id="ChangeImage" class="sub-tab-content">
             <form id="ChangeImageForm">
 
-                <label for="MenuIdForRestaurantImage">Restautant ID:</label>
-                <input type="number" id="MenuIdForRestaurantImage" placeholder="Enter product ID" required>
+                <label for="DishIdToModImage">Dish ID:</label>
+                <input type="number" id="DishIdToModImage" placeholder="Enter dish ID" required min="1">
 
-                <label for="MenuItemIdToModifyImage">Menu item ID:</label>
-                <input type="number" id="MenuItemIdToModifyImage" placeholder="Enter  menu item ID" required min="1">
+                <label for="DishImageChangeURL">Image URLs:</label>
+                <input type="file" id="DishImageChangeURL" name="Dish_images">
     
-                <label for="MenuItemImageChangeURL">Image URL:</label>
-                <input type="text" id="MenuItemImageChangeURL" placeholder="Enter image URL" required>
-    
-                <input type="submit" value="Change image menu item">
+                <input type="submit" value="Change image dish">
             </form>
         </div>
     
-        <!-- Form for deleting a product and model in the same tab -->
-        <div id="DeleteMenuItem" class="sub-tab-content">
-            <!-- Form for deleting a product -->
-            <form id="DeleteMenuItemForm">
-                <label for="MenuItemIdToDelete">Menu item ID to Delete:</label>
-                <input type="number" id="MenuItemIdToDelete" placeholder="Enter menu item ID" required min="1">
-                <button type="submit">Delete menu item</button>
+        <div id="DeleteDish" class="sub-tab-content">
+            <form id="DeleteDishForm">
+                <label for="DishIdToDelete">Dish ID to delete:</label>
+                <input type="number" id="DishIdToDelete" placeholder="Enter dish ID" required min="1">
+                <button type="submit">Delete dish</button>
             </form>
         
-            <!-- Form for deleting all models -->
-            <form id="deleteAllMenuItemIdForm" onsubmit="DeleteAllMenuItem(); return false;">
-                <button type="submit">Delete all menu item</button>
-            </form>
-        </div>
-
-        <div id="ChangeStatuseItem" class="sub-tab-content"> 
-            <form id="ChangeStatuseItemForm">
-                <label for="MenuId">Menu ID:</label>
-                <input type="number" id="MenuId" placeholder="Enter Menu ID" required min="1">
-            
-                <label for="newStatusItem">New Status:</label>
-                <select id="newStatusItem" required>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-        
-                <input type="submit" value="Change Status">
+            <form id="deleteAllDishIdForm" onsubmit="confirmDeleteAllDishes(); return false;">
+                <button type="submit">Delete all dishes</button>
             </form>
         </div>
     </div>
-    
+
+    <div id="menu" class="tab-content">
+        <div class="sub-tabs" id="menuSubTabs">
+            <button onclick="openSubTab('addMenu')">Add menu</button>
+            <button onclick="openSubTab('viewMenu')">View menu</button>
+            <button onclick="openSubTab('searchMenu')">Search menu</button>
+            <button onclick="openSubTab('changeStatusMenu')">Change status menu</button>
+            <button onclick="openSubTab('deleteMenu')">Delete menu</button>
+        </div>
+
+        <div id="viewMenu" class="sub-tab-content">
+            <button onclick="loadRestaurant()">Load Restaurants</button>
+        </div>
+
+        <div id="searchMenu" class="sub-tab-content">
+           
+            <form id="searchForm">
+                <input type="text" id="searchQuery" placeholder="Search by menu parameters" required>
+                <input type="submit" value="Search">
+            </form>
+            
+            <div id="searchResults"></div>
+        </div>
+
+            <div id="changeStatusMenu" class="sub-tab-content"> 
+                <form id="changeStatusMenuForm">
+                    <label for="MenuId">Menu ID:</label>
+                    <input type="number" id="MenuId" placeholder="Enter menu ID" required min="1">
+                
+                    <label for="newStatusMenu">New Status:</label>
+                    <select id="newStatusMenu" required>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+            
+                    <input type="submit" value="Change Status">
+                </form>
+            </div>
+
+        <div id="deleteMenu" class="sub-tab-content">
+            <form id="deleteMenuForm">
+                <label for="MenuIdToDelete">Menu ID:</label>
+                <input type="number" id="MenuIdToDelete" placeholder="Enter menu ID" required min="1">
+                <input type="submit" value="Delete Menu">
+                <button onclick="confirmDeleteAllMenu()">Delete all menu</button>
+            </form>
+        </div>
+
+        <div id="addMenu" class="sub-tab-content">
+            <form id="addMenuForm">
+
+                <label for="RestaurantIdForMenu">Restaurant ID:</label>
+                <input type="text" id="RestaurantIdForMenu" placeholder="Enter restaurant ID" required>
+        
+                <label for="MenuName">Menu Name:</label>
+                <input type="text" id="MenuName" placeholder="Enter menu name" required>
+
+                <label for="StatusMenu">Status:</label>
+                <select id="StatusMenu" required>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+                <input type="submit" value="Add menu">
+            </form>
+        </div>
+    </div>
+
         <div id="users" class="tab-content">
-            <!-- Sub-tabs for the "Employees" tab -->
             <div class="sub-tabs" id="usersSubTabs">
                 <button onclick="openSubTab('addUser')">Add</button>
                 <button onclick="openSubTab('deleteUser')">Delete</button>
             </div>
         
-            <!-- Content of sub-tabs for the "Employees" tab -->
             <div id="addUser" class="sub-tab-content">
-                <!-- Form for adding an employee -->
                 <form id="addUserForm">
                     <label for="UserName">User name:</label>
                     <input type="text" id="UserName" placeholder="Enter user name" required>
@@ -247,7 +305,6 @@
                 </form>
             </div>
         
-            <!-- Form for deleting an employee -->
             <div id="deleteUser" class="sub-tab-content">
                 <form id="deleteUserForm">
                     <label for="UserIdToDelete">User ID to Delete:</label>
@@ -273,44 +330,30 @@ const commonOptions = {
 };
 
 function openSubTab(subTabName) {
+    debugger;
     var subTab = document.getElementById(subTabName);
     var subTabs = document.getElementsByClassName("sub-tab-content");
 
-    console.log("Opening subtab: " + subTabName);
-
-    // Закрываем все подвкладки, кроме выбранной
     for (var i = 0; i < subTabs.length; i++) {
         if (subTabs[i] !== subTab) {
             subTabs[i].style.display = "none";
-            console.log("Closing subtab: " + subTabs[i].id);
         }
     }
 
-    // Переключаем видимость текущей подвкладки
     subTab.style.display = subTab.style.display === "block" ? "none" : "block";
-
-    console.log("Subtab visibility toggled: " + subTab.style.display);
-
 }
 
 function openTab(tabName) {
     var tab = document.getElementById(tabName);
     var tabs = document.getElementsByClassName("tab-content");
 
-    console.log("Opening tab: " + tabName);
-
-    // Закрываем все вкладки, кроме выбранной
     for (var i = 0; i < tabs.length; i++) {
         if (tabs[i] !== tab) {
             tabs[i].style.display = "none";
-            console.log("Closing tab: " + tabs[i].id);
         }
     }
     
-    // Переключаем видимость текущей вкладки
     tab.style.display = window.getComputedStyle(tab).display === "block" ? "none" : "block";
-
-    console.log("Tab visibility toggled: " + tab.style.display);
 }
 
 function confirmDeleteAllData() {
@@ -338,8 +381,7 @@ function confirmDeleteAllData() {
 
 document.getElementById('changeStatusRestaurant').addEventListener('submit', function (event) {
     event.preventDefault();
-    
-    // Получаем значения из формы
+   
     const RestaurantId = document.getElementById('RestaurantId').value;
     const newStatus = document.getElementById('newStatus').value;
  
@@ -367,7 +409,6 @@ function changeStatusRestaurant(RestaurantId, newStatus) {
     });
 }
 
-// Функция для удаления отдельного заказа
 document.getElementById('deleteRestaurant').addEventListener('submit', function (event) {
         event.preventDefault();
         const RestaurantIdToDelete = document.getElementById('RestaurantIdToDelete').value;
@@ -399,7 +440,6 @@ function deleteAllrestaurants() {
         });
 }
 
-// Функция для удаления отдельного ресторана
 function deleteRestaurant(RestaurantIdToDelete) {
     axios.post('/delete_restaurant', {
             RestaurantId: RestaurantIdToDelete
@@ -420,111 +460,124 @@ function deleteRestaurant(RestaurantIdToDelete) {
         });
 }
 
+
 document.getElementById('addRestaurantForm').addEventListener('submit', function (event) {
-event.preventDefault();
-// Получаем значения из формы
-const RestaurantName = document.getElementById('RestaurantName').value;
-const Status = document.getElementById('Status').value;
-const Image = document.getElementById('Image').value;
+        event.preventDefault();
+        
+        const RestaurantName = document.getElementById('RestaurantName').value;
+        const Status = document.getElementById('Status').value;
+        const RestaurantImageFiles = document.getElementById('RestaurantImage').files;
 
-addRestaurant(RestaurantName,Status,Image);
-});
+        // Создаем объект FormData для передачи данных формы, включая файлы
+        const formData = new FormData();
+        formData.append('RestaurantName', RestaurantName);
+        formData.append('Status', Status);
 
-function addRestaurant(RestaurantName,Status,Image) {
-    axios.post('/add_restaurant', {
-        RestaurantName : RestaurantName,
-             Status: Status,
-             Image : Image
-        })
-        .then(response => {
-            console.log(response.data);
-            toastr.success('<i class="toast-icon fas fa-check-circle"></i>Order successfully added', 'Success', {
-                ...commonOptions,
-                iconClass: 'toast-success'
+        // Добавляем все выбранные файлы изображений к FormData
+        for (const file of RestaurantImageFiles) {
+            formData.append('RestaurantImage', file);
+        }
+
+        addRestaurant(formData);
+    });
+
+    function addRestaurant(formData) {
+        axios.post('/add_restaurant', formData)
+            .then(response => {
+                console.log(response.data);
+                toastr.success('<i class="toast-icon fas fa-check-circle"></i>Restaurant successfully added', 'Success', {
+                    ...commonOptions,
+                    iconClass: 'toast-success'
+                });
+            })
+            .catch(error => {
+                console.error('Error adding restaurant:', error);
+                toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error adding restaurant', 'Error', {
+                    ...commonOptions,
+                    iconClass: 'toast-error'
+                });
             });
-        })
-        .catch(error => {
-            console.error('Error adding order:', error);
-            toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error adding order', 'Error', {
-                ...commonOptions,
-                iconClass: 'toast-error'
-            });
-        });
-}
+    }
 
-    document.getElementById('AddMenuItemForm').addEventListener('submit', function (event) {
-    event.preventDefault(); // Предотвращаем стандартное поведение формы (перезагрузка страницы)
-    // Получаем значения из формы
-    const MenuItemName = document.getElementById('MenuItemName').value;
-    const MenuItemPrice = document.getElementById('MenuItemPrice').value; 
-    const MenuIdForRestaurant = document.getElementById('MenuIdForRestaurant').value; 
-    const MenuItemImageURL = document.getElementById('MenuItemImageURL').value; 
-    const Status = document.getElementById('Status').value; 
+document.getElementById('addDishItemForm').addEventListener('submit', function (event) {
+    event.preventDefault();  
     
-    // Вызываем функцию для отправки запроса на добавление изделия
-    addMenuItem(MenuItemName, MenuItemPrice,MenuIdForRestaurant,MenuItemImageURL ,Status);
+    const DishItemName = document.getElementById('DishItemName').value;
+    const DishItemPrice = document.getElementById('DishItemPrice').value; 
+    const DishIdForMenu = document.getElementById('DishIdForMenu').value; 
+    const DishItemIngredients = document.getElementById('DishItemIngredients').value;
+    const DishItemImageURL = document.getElementById('DishItemImageURL').files[0];
+
+// Создаем объект FormData для передачи данных формы, включая файлы
+    const formData = new FormData();
+    formData.append('DishItemName', DishItemName);
+    formData.append('DishItemPrice', DishItemPrice);
+    formData.append('DishIdForMenu', DishIdForMenu);
+    formData.append('DishItemIngredients', DishItemIngredients);
+    formData.append('DishItemImageURL', DishItemImageURL);
+
+    addDish(formData);
 });
 
-// Функция для добавления меню
-function addMenuItem(MenuItemName, MenuItemPrice,MenuIdForRestaurant,MenuItemImageURL, Status) {
-    axios.post('/add_menu_item', {
-            MenuItemName : MenuItemName,
-            MenuItemPrice : MenuItemPrice,
-            MenuIdForRestaurant : MenuIdForRestaurant,
-            MenuItemImageURL : MenuItemImageURL, 
-            Status : Status
-        })
+function addDish(formData) {
+    axios.post('/add_dish', formData)
         .then(response => {
             console.log(response.data);
-            toastr.success('<i class="toast-icon fas fa-check-circle"></i>Product successfully added', 'Success', {
+            toastr.success('<i class="toast-icon fas fa-check-circle"></i>Restaurant successfully added', 'Success', {
                 ...commonOptions,
                 iconClass: 'toast-success'
             });
         })
         .catch(error => {
-            console.error('Error adding product:', error);
-            toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error adding product', 'Error', {
+            console.error('Error adding restaurant:', error);
+            toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error adding restaurant', 'Error', {
                 ...commonOptions,
                 iconClass: 'toast-error'
             });
         });
 }
 
-document.getElementById('DeleteMenuItemForm').addEventListener('submit', function (event) {
+document.getElementById('DeleteDishForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    const MenuItemIdToDelete = document.getElementById('MenuItemIdToDelete').value;
-    console.log('Deleting menu item with ID:', MenuItemIdToDelete); // Добавляем лог
-    DeleteMenuItem(MenuItemIdToDelete);
+    const DishIdToDelete = document.getElementById('DishIdToDelete').value;
+    DeleteDish(DishIdToDelete);
 });
 
-function DeleteMenuItem(MenuItemIdToDelete) {
-    axios.post('/delete_menu_item', {
-        MenuItemIdToDelete: MenuItemIdToDelete
+function DeleteDish(DishIdToDelete) {
+    axios.post('/delete_dish', {
+        DishIdToDelete: DishIdToDelete
     })
     .then(response => {
-        console.log('Response:', response.data); // Добавляем лог
-        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Order successfully deleted', 'Success', {
+        console.log('Response:', response.data);  
+        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Dish successfully deleted', 'Success', {
             ...commonOptions,
             iconClass: 'toast-success'
         });
     })
     .catch(error => {
-        console.error('Error deleting order:', error.response.data);
-        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error deleting order', 'Error', {
+        console.error('Error deleting dish:', error.response.data);
+        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error deleting dish', 'Error', {
             ...commonOptions,
             iconClass: 'toast-error'
         });
     });
 }
 
-function DeleteAllMenuItem() {
-    fetch('/delete_all_menu_item', {
+function confirmDeleteAllDishes() {
+    var confirmDelete = confirm("Are you sure you want to delete all dishes?");
+    if (confirmDelete) {
+        deleteAllDishes();
+    }
+}
+
+function deleteAllDishes() {
+    fetch('/delete_all_dishes', {
         method: 'POST',
     })
     .then(response => response.json())
     .then(data => {
         console.log(data);
-        toastr.success('<i class="toast-icon fas fa-check-circle"></i>All products deleted successfully', 'Success', {
+        toastr.success('<i class="toast-icon fas fa-check-circle"></i>All dishes deleted successfully', 'Success', {
             ...commonOptions,
             iconClass: 'toast-success'
         });
@@ -534,28 +587,26 @@ function DeleteAllMenuItem() {
 
 document.getElementById('ChangePriceItem').addEventListener('submit', function (event) {
     event.preventDefault();
-    const restaurant_id = document.getElementById('MenuIdForRestaurantPrice').value;
-    const menu_id = document.getElementById('MenuItemIdToModifyPrice').value;
-    const new_price = document.getElementById('NewMenuItemPrice').value;
-    ChangePriceItem(restaurant_id, menu_id, new_price);
+    const DishIDToModPrice = document.getElementById('DishIDToModPrice').value;
+    const NewDishPrice = document.getElementById('NewDishPrice').value;
+    ChangePriceItem(DishIDToModPrice, NewDishPrice);
 });
    
-function ChangePriceItem(restaurant_id, menu_id, new_price) {
+function ChangePriceItem(DishIDToModPrice, NewDishPrice) {
     axios.post('/change_price_item', {
-        restaurant_id: restaurant_id,
-        menu_id: menu_id,
-        new_price: new_price
+        DishIDToModPrice: DishIDToModPrice,
+        NewDishPrice: NewDishPrice
     })
     .then(response => {
         console.log("Response:", response.data);
-        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Product quantity modified successfully', 'Success', {
+        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Dish price change successfully', 'Success', {
             ...commonOptions,
             iconClass: 'toast-success'
         });
     })
     .catch(error => {
-        console.error('Error modifying product quantity:', error.response.data);
-        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error modifying product quantity', 'Error', {
+        console.error('Error dish price change:', error.response.data);
+        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error dish price change', 'Error', {
             ...commonOptions,
             iconClass: 'toast-error'
         });
@@ -564,28 +615,55 @@ function ChangePriceItem(restaurant_id, menu_id, new_price) {
 
 document.getElementById('ChangeNameItemForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    const restaurant_id = document.getElementById('MenuIdForRestaurantName').value;
-    const menu_id = document.getElementById('MenuItemIdToModifyName').value;
-    const new_name = document.getElementById('NameToModify').value;
-    ChangeNameItem(restaurant_id, menu_id, new_name);
+    const DishIdToModName = document.getElementById('DishIdToModName').value;
+    const NameToModify = document.getElementById('NameToModify').value;
+    ChangeNameItem(DishIdToModName, NameToModify);
 });
    
-function ChangeNameItem(restaurant_id, menu_id, new_name) {
+function ChangeNameItem(DishIdToModName, NameToModify) {
     axios.post('/change_name_item', {
-        restaurant_id: restaurant_id,
-        menu_id: menu_id,
-        new_name: new_name
+        DishIdToModName: DishIdToModName,
+        NameToModify: NameToModify
     })
     .then(response => {
         console.log("Response:", response.data);
-        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Product quantity modified successfully', 'Success', {
+        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Dish name change successfully', 'Success', {
             ...commonOptions,
             iconClass: 'toast-success'
         });
     })
     .catch(error => {
-        console.error('Error modifying product quantity:', error.response.data);
-        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error modifying product quantity', 'Error', {
+        console.error('Error dish name change:', error.response.data);
+        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error dish name change', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error'
+        });
+    });
+}
+
+
+document.getElementById('ChangeIngredientsForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const DishIDToModIngredients = document.getElementById('DishIDToModIngredients').value;
+    const NewDishIngredients = document.getElementById('NewDishIngredients').value;
+    ChangeIngredients(DishIDToModIngredients, NewDishIngredients);
+});
+   
+function ChangeIngredients(DishIDToModIngredients, NewDishIngredients) {
+    axios.post('/change_ingredients', {
+        DishIDToModIngredients: DishIDToModIngredients,
+        NewDishIngredients: NewDishIngredients
+    })
+    .then(response => {
+        console.log("Response:", response.data);
+        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Indigrients change successfully', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success'
+        });
+    })
+    .catch(error => {
+        console.error('Error indigrients change:', error.response.data);
+        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error indigrients change', 'Error', {
             ...commonOptions,
             iconClass: 'toast-error'
         });
@@ -594,60 +672,84 @@ function ChangeNameItem(restaurant_id, menu_id, new_name) {
 
 document.getElementById('ChangeImageForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    const restaurant_id = document.getElementById('MenuIdForRestaurantImage').value;
-    const menu_id = document.getElementById('MenuItemIdToModifyImage').value;
-    const new_image = document.getElementById('MenuItemImageChangeURL').value;
-    ChangeImageItem(restaurant_id, menu_id, new_image);
+    const DishIdToModImage = document.getElementById('DishIdToModImage').value;
+    const DishImageChangeURL = document.getElementById('DishImageChangeURL').files[0];
+
+    const formData = new FormData();
+    formData.append('DishIdToModImage', DishIdToModImage);
+    formData.append('DishImageChangeURL', DishImageChangeURL);
+
+    ChangeImageItem(formData);
 });
-   
-function ChangeImageItem(restaurant_id, menu_id, new_image) {
-    axios.post('/change_image_item', {
-        restaurant_id: restaurant_id,
-        menu_id: menu_id,
-        new_image: new_image
-    })
-    .then(response => {
-        console.log("Response:", response.data);
-        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Product quantity modified successfully', 'Success', {
-            ...commonOptions,
-            iconClass: 'toast-success'
+
+function ChangeImageItem(formData) {
+    axios.post('/change_image_item', formData)
+        .then(response => {
+            console.log(response.data);
+            toastr.success('<i class="toast-icon fas fa-check-circle"></i>Restaurant successfully added', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success'
+            });
+        })
+        .catch(error => {
+            console.error('Error adding restaurant:', error);
+            toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error adding restaurant', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error'
+            });
         });
-    })
-    .catch(error => {
-        console.error('Error modifying product quantity:', error.response.data);
-        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error modifying product quantity', 'Error', {
-            ...commonOptions,
-            iconClass: 'toast-error'
-        });
-    });
 }
 
-
-document.getElementById('ChangeStatuseItemForm').addEventListener('submit', function (event) {
+document.getElementById('changeStatusMenuForm').addEventListener('submit', function (event) {
     event.preventDefault();
     
-    // Получаем значения из формы
     const MenuId = document.getElementById('MenuId').value;
-    const newStatus = document.getElementById('newStatusItem').value;
+    const newStatus = document.getElementById('newStatusMenu').value;
  
-    changeStatusItem(MenuId, newStatus);
+    changeStatusMenu(MenuId, newStatus);
 });
 
-function changeStatusItem(MenuId, newStatus) {
-    axios.post('/change_status_item', {
+function changeStatusMenu(MenuId, newStatus) {
+    axios.post('/change_status_menu', {
         MenuId: MenuId,
         newStatus: newStatus
     })
     .then(response => {
         console.log(response.data);
-        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Order status successfully changed', 'Success', {
+        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Menu status successfully changed', 'Success', {
             ...commonOptions,
             iconClass: 'toast-success'
         });
     })
     .catch(error => {
-        console.error('Error changing order status:', error);
-        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error changing order status', 'Error', {
+        console.error('Error changing menu status:', error);
+        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error changing menu status', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error'
+        });
+    });
+}
+
+document.getElementById('deleteMenuForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const MenuIdToDelete = document.getElementById('MenuIdToDelete').value;
+    DeleteMenu(MenuIdToDelete);
+});
+
+function DeleteMenu(MenuIdToDelete) {
+    axios.post('/delete_menu', {
+        MenuIdToDelete: MenuIdToDelete
+    })
+    .then(response => {
+        console.log('Response:', response.data);  
+        toastr.success('<i class="toast-icon fas fa-check-circle"></i>Menu successfully deleted', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success'
+        });
+    })
+    .catch(error => {
+        console.error('Error deleting menu:', error.response.data);
+        toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error deleting menu', 'Error', {
             ...commonOptions,
             iconClass: 'toast-error'
         });
@@ -655,40 +757,75 @@ function changeStatusItem(MenuId, newStatus) {
 }
 
 
+function confirmDeleteAllMenu() {
+    var confirmDelete = confirm("Are you sure you want to delete all menu?");
+    if (confirmDelete) {
+        deleteAllMenu();
+    }
+}
+
+function deleteAllMenu() {
+    axios.post('/delete_all_menu')
+        .then(response => {
+            console.log(response.data);
+            toastr.success('<i class="toast-icon fas fa-check-circle"></i>All menu successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error deleting all menu', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error'
+            });
+        });
+}
+
+
+document.getElementById('addMenuForm').addEventListener('submit', function (event) {
+    event.preventDefault();  
+    
+    const MenuName = document.getElementById('MenuName').value;
+    const Status = document.getElementById('StatusMenu').value;
+    const RestaurantIdForMenu = document.getElementById('RestaurantIdForMenu').value; 
+    
+    AddMenu(MenuName, Status, RestaurantIdForMenu);
+});
+
+// Функция для добавления меню
+function AddMenu(MenuName, Status, RestaurantIdForMenu) {
+    axios.post('/add_menu', {
+            MenuName : MenuName,
+            Status : Status,
+            RestaurantIdForMenu : RestaurantIdForMenu, 
+        })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('<i class="toast-icon fas fa-check-circle"></i>Menu successfully added', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success'
+            });
+        })
+        .catch(error => {
+            console.error('Error add menu:', error);
+            toastr.error('<i class="toast-icon fas fa-times-circle"></i>Error adding menu', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error'
+            });
+        });
+}
+
 document.getElementById('addUserForm').addEventListener('submit', async function (event) {
     event.preventDefault();
     
-    // Получаем значения из формы
     const username = document.getElementById('UserName').value;
-console.log('Username:', username);
-
-const email = document.getElementById('UserEmail').value;
-console.log('Email:', email);
-
-const role = document.getElementById('role').value;
-console.log('Role:', role);
-
-const password = document.getElementById('UserPassword').value;
-console.log('Password:', password);
-
-    
-    
-    // Хэшируем пароль
-    const password_hash = await hashPassword(password);
-    console.log('password_hash:', password_hash);
-    // Вызываем функцию для отправки запроса на добавление сотрудника
+    const email = document.getElementById('UserEmail').value;
+    const role = document.getElementById('role').value;
+    const password_hash = document.getElementById('UserPassword').value;
     addUser(username, email, password_hash, role);
 });
 
-// Функция для хэширования пароля
-async function hashPassword(password) {
-    // Отправляем запрос на сервер для хэширования пароля
-    const response = await axios.post('/hash_password', { password: password });
-    // Возвращаем хэшированный пароль из ответа сервера
-    return response.data.hashedPassword;
-}
-
-// Функция для отправки запроса на добавление сотрудника
 function addUser(username, email, password_hash, role) {
     axios.post('/add_user', {
         username: username,
@@ -712,13 +849,9 @@ function addUser(username, email, password_hash, role) {
     });
 }
 
-// Обработчик для формы удаления сотрудника
 document.getElementById('deleteUserForm').addEventListener('submit', function (event) {
     event.preventDefault();
-
-    // Получаем значение из формы
     const user_id = document.getElementById('UserIdToDelete').value;
-    // Вызываем функцию для отправки запроса на удаление сотрудника
     deleteUser(user_id);
 });
 
@@ -743,23 +876,21 @@ function deleteUser(user_id) {
 }
 
 document.getElementById('searchForm').addEventListener('submit', function (event) {
-    event.preventDefault(); // Эта строка предотвращает стандартное поведение формы (перезагрузка страницы)
+    event.preventDefault(); 
     const searchQuery = document.getElementById('searchQuery').value;
-
-    // Вызываем функцию для загрузки и отображения результатов поиска
     searchRestaurants(searchQuery);
 });
 
 function searchRestaurants(searchQuery) {
     axios.get(`/search_restaurants?search_query=${searchQuery}`)
         .then(response => {
-            const restaurants = response.data; // Изменено на restaurants
-            const searchResultsContainer = document.getElementById('searchResults'); // Изменено на searchResultsContainer
+            const restaurants = response.data; 
+            const searchResultsContainer = document.getElementById('searchResults'); 
             const table = document.createElement('table');
             table.border = '1';
 
             // Указываем новый порядок столбцов
-            const columns = ['id', 'name', 'image', 'status']; // Исправлена опечатка в 'imege'
+            const columns = ['id', 'name', 'image', 'status']; 
 
             // Заголовок таблицы
             const headerRow = document.createElement('tr');
@@ -771,11 +902,11 @@ function searchRestaurants(searchQuery) {
             table.appendChild(headerRow);
 
             // Данные ресторанов
-            restaurants.forEach(restaurant => { // Изменено на restaurants
+            restaurants.forEach(restaurant => { 
                 const row = document.createElement('tr');
                 columns.forEach(column => {
                     const td = document.createElement('td');
-                    td.textContent = restaurant[column]; // Изменено на restaurant
+                    td.textContent = restaurant[column]; 
                     row.appendChild(td);
                 });
                 table.appendChild(row);
@@ -792,12 +923,11 @@ function searchRestaurants(searchQuery) {
 function loadRestaurant() {
     axios.get('/fetch_restaurants')
         .then(response => {
-            const restaurants = response.data; // Заменил orders на restaurants
+            const restaurants = response.data; 
             const restaurantsContainer = document.getElementById('viewRestaurants');
             const table = document.createElement('table');
             table.border = '1';
 
-            // Указываем новый порядок столбцов
             const columns = ['id', 'name', 'image', 'status'];
 
             // Заголовок таблицы
@@ -810,11 +940,11 @@ function loadRestaurant() {
             table.appendChild(headerRow);
 
             // Данные ресторанов
-            restaurants.forEach(restaurant => { // Заменил orders на restaurants
+            restaurants.forEach(restaurant => { 
                 const row = document.createElement('tr');
                 columns.forEach(column => {
                     const td = document.createElement('td');
-                    td.textContent = restaurant[column]; // Заменил orders на restaurants
+                    td.textContent = restaurant[column];
                     row.appendChild(td);
                 });
                 table.appendChild(row);

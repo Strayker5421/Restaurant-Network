@@ -1,6 +1,7 @@
 from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from sqlalchemy.dialects.postgresql import ARRAY
 
 
 class User(UserMixin, db.Model):
@@ -23,7 +24,7 @@ class User(UserMixin, db.Model):
 class Restaurant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
-    image_path = db.Column(db.Text)
+    images = db.Column(ARRAY(db.String()))
     status = db.Column(db.Boolean, default=False)
     menus = db.relationship(
         "Menu", backref="restaurant", lazy="dynamic", cascade="all, delete-orphan"
@@ -32,11 +33,31 @@ class Restaurant(db.Model):
 
 class Menu(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), unique=True, nullable=False)
-    image_path = db.Column(db.Text)
+    name = db.Column(db.String(255), nullable=False)
     status = db.Column(db.Boolean, default=False)
-    price = db.Column(db.Integer)
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"))
+    dishes = db.relationship(
+        "Dish", backref="menu", lazy="dynamic", cascade="all, delete-orphan"
+    )
+
+
+class Dish(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    ingredients = db.Column(db.String(500), nullable=False)
+    image = db.Column(db.String(255), nullable=True)
+    menu_id = db.Column(db.Integer, db.ForeignKey("menu.id"))
+    """ingredients = db.relationship(
+        "Ingredient", backref="dish", lazy="dynamic", cascade="all, delete-orphan"
+    )
+
+
+class Ingredient(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), unique=True, nullable=False)
+    weight = db.Column(db.Float, nullable=False)
+    dish_id = db.Column(db.Integer, db.ForeignKey("dish.id"))"""
 
 
 @login.user_loader

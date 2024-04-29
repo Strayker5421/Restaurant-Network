@@ -1,12 +1,12 @@
-from flask import jsonify, request, render_template
+from flask import jsonify, request, render_template, url_for
 from flask_login import current_user, login_required
 from app import db
-from app.models import User, Menu, Restaurant
+from app.models import User, Menu, Restaurant, Dish
 from app.admin import bp
-import logging
-from werkzeug.security import generate_password_hash
 from sqlalchemy import or_, cast
 from sqlalchemy.types import String
+from werkzeug.utils import secure_filename
+import os
 
 
 @bp.route("/administrator", methods=["POST", "GET"])
@@ -17,7 +17,6 @@ def administrator():
 @bp.route("/delete_all_data", methods=["POST"])
 def delete_all_data():
     try:
-        # Удаление данных из каждой таблицы
         db.session.query(User).delete()
         db.session.query(Menu).delete()
         db.session.query(Restaurant).delete()
@@ -28,44 +27,36 @@ def delete_all_data():
         return jsonify({"error": str(e)}), 500
 
 
-@bp.route("/delete_menu_item", methods=["POST"])
-def delete_menu_item():
+@bp.route("/delete_dish", methods=["POST"])
+def delete_dish():
     try:
         data = request.json
-        menu_item_id = data.get("MenuItemIdToDelete")
-        print(menu_item_id)
-        menu_item = Menu.query.get(menu_item_id)
+        dish_id = data.get("DishIdToDelete")
 
-        if not menu_item:
-            return jsonify({"error": "Menu item not found"}), 404
+        dish = Dish.query.get(dish_id)
 
-        db.session.delete(menu_item)
+        if not dish:
+            return jsonify({"error": "Dish not found"}), 404
+
+        db.session.delete(dish)
         db.session.commit()
 
-        logging.info(f"Menu item {menu_item} deleted successfully.")
-        return jsonify({"message": "Menu item deleted successfully"})
+        return jsonify({"message": "Dish deleted successfully"})
 
     except Exception as e:
-        # Логируем ошибку
-        logging.error(f"Error deleting menu item: {str(e)}")
-        # Возвращаем более информативный JSON-ответ
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
 
-@bp.route("/delete_all_menu_item", methods=["POST"])
-def delete_all_menu_item():
+@bp.route("/delete_all_dishes", methods=["POST"])
+def delete_all_dishes():
     try:
-        menu_item = Menu.query.all()
-
-        db.session.delete(menu_item)
+        dishes = Dish.query.all()
+        for dish in dishes:
+            db.session.delete(dish)
         db.session.commit()
 
-        logging.info("All menu item deleted successfully.")
-        return jsonify({"message": "All menu item deleted successfully"})
+        return jsonify({"message": "All dish deleted successfully"})
     except Exception as e:
-        # Логируем ошибку
-        logging.error(f"Error deleting all menu item: {str(e)}")
-        # Возвращаем более информативный JSON-ответ
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
 
@@ -76,11 +67,7 @@ def change_status_restaurant():
         menu_id = data.get("RestaurantId")
         new_status = data.get("newStatus")
 
-        if not menu_id or new_status is None:
-            return jsonify({"error": "Invalid request data"}), 400
-
-        # Преобразование строкового значения 'active' в булево значение True
-        if new_status.lower() == "active":
+        if new_status.lower() == "Open":
             new_status = True
         else:
             new_status = False
@@ -95,7 +82,6 @@ def change_status_restaurant():
         return jsonify({"message": "Restaurant status changed successfully"})
 
     except Exception as e:
-        logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 
@@ -107,21 +93,17 @@ def delete_restaurant():
 
         restaurant_delete = Restaurant.query.get(menu_id)
         if restaurant_delete:
-            # Удаляем связные меню
             related_menu_items = Menu.query.filter_by(id=restaurant_delete.id).all()
             for related_menu_item in related_menu_items:
                 db.session.delete(related_menu_item)
             db.session.delete(restaurant_delete)
             db.session.commit()
 
-            logging.info(f"Restaurant {menu_id} deleted successfully")
             return jsonify({"message": "Restaurant deleted successfully"})
         else:
-            logging.warning(f"Restaurant with ID {menu_id} not found")
             return jsonify({"error": "Restaurant not found"}), 404
 
     except Exception as e:
-        logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 
@@ -137,112 +119,94 @@ def delete_all_restaurants():
 @bp.route("/add_restaurant", methods=["POST"])
 def add_restaurant():
     try:
-        data = request.json
+        restaurant_name = request.form.get("RestaurantName")
+        status = request.form.get("Status")
+        images = request.files.getlist("RestaurantImage")
 
-        # Извлекаем данные из запроса
-        Restaurant_name = data.get("RestaurantName")
-        Image = data.get("Image")
-        Status = data.get("Status")
-        # Преобразуем строку "Status" в булево значение
-        status_bool = True if Status == "Active" else False
+        status_bool = True if status == "Open" else False
 
-        existing_restaurant = Restaurant.query.filter_by(name=Restaurant_name).first()
+        existing_restaurant = Restaurant.query.filter_by(name=restaurant_name).first()
 
         if existing_restaurant:
-            # Если запись существует, используем ее id
-            menu_id = existing_restaurant.id
-        else:
-            # Если записи нет, создаем новую
-            new_restaurant = Restaurant(
-                name=Restaurant_name, image_path=Image, status=status_bool
-            )
-            db.session.add(new_restaurant)
-            db.session.commit()
-            # Получаем id после вставки новой записи
-            menu_id = new_restaurant.id
+            return jsonify({"error": "Restaurant already exists"}), 404
+
+        images_paths = save_image(images, "restaurants/")
+        new_restaurant = Restaurant(
+            name=restaurant_name, images=images_paths, status=status_bool
+        )
+
+        db.session.add(new_restaurant)
+        db.session.commit()
 
         return jsonify(
             {
                 "message": "Restaurant added successfully",
-                "new_menu_id": menu_id,
+                "new_restaurant_id": new_restaurant.id,
             }
         )
     except Exception as e:
-        # Логируем ошибку
-        logging.error(f"Error adding Restaurant: {str(e)}")
-        # Возвращаем более информативный JSON-ответ
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
 
-@bp.route("/add_menu_item", methods=["POST"])
-def add_menu_item():
+def save_image(images, path):
+    images_paths = []
+    for image in images:
+        filename = secure_filename(image.filename)
+        image.save("app/static/images/" + path + filename)
+        images_paths.append(url_for("static", filename="images/" + path + filename))
+    return images_paths
+
+
+@bp.route("/add_dish", methods=["POST"])
+def add_dish():
     try:
-        data = request.json
+        dish_name = request.form.get("DishItemName")
+        dish_price = request.form.get("DishItemPrice")
+        menu_id = request.form.get("DishIdForMenu")
+        dish_image = request.files.get("DishItemImageURL")
+        dish_ingredients = request.form.get("DishItemIngredients")
 
-        # Извлекаем данные из запроса
-        MenuItemName = data.get("MenuItemName")
-        MenuItemPrice = data.get("MenuItemPrice")
-        MenuIdForRestaurant = data.get("MenuIdForRestaurant")
-        MenuItemImageURL = data.get("MenuItemImageURL")
-        Status = data.get("Status")
+        existing_menu = Menu.query.get(menu_id)
 
-        existing_Restaurant = Restaurant.query.get(MenuIdForRestaurant)
+        if not existing_menu:
+            error_message = "Menu not found"
 
-        if not existing_Restaurant:
-            return jsonify({"error": "Restaurant not found"}), 404
+            return jsonify({"error": error_message}), 404
 
-        # Создаем новую запись в Menu
-        new_menu = Menu(
-            name=MenuItemName,
-            image_path=MenuItemImageURL,
-            price=MenuItemPrice,
-            status=True if Status == "Active" else False,
-            restaurant_id=MenuIdForRestaurant,
+        image_path = save_image(dish_image, "dishes/")
+
+        new_menu = Dish(
+            name=dish_name,
+            ingredients=dish_ingredients,
+            image=image_path,
+            price=dish_price,
+            menu_id=menu_id,
         )
         db.session.add(new_menu)
         db.session.commit()
 
-        return jsonify({"message": "Menu added successfully"})
+        return jsonify({"message": "Dish added successfully"})
     except Exception as e:
-        # Логируем ошибку
-        logging.error(f"Error adding menu: {str(e)}")
-        # Возвращаем более информативный JSON-ответ
-        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+        error_message = f"Internal Server Error: {str(e)}"
+
+        return jsonify({"error": error_message}), 500
 
 
 @bp.route("/change_price_item", methods=["POST"])
 def change_price_item():
     data = request.json
-    menu_id = data.get("menu_id")
-    new_price = data.get("new_price")
+    dish_id = data.get("DishIDToModPrice")
+    new_price = data.get("NewDishPrice")
 
-    restaurant = Restaurant.query.get(menu_id)
+    dish = Dish.query.get(dish_id)
 
-    if restaurant:
-        Menu_item = Menu.query.get(menu_id)
+    if dish:
+        dish.price = new_price
+        db.session.commit()
 
-        if Menu_item:
-            Menu_item.price = new_price
-            db.session.commit()
+        return jsonify({"message": "Dish price modified successfully"}), 200
 
-            return jsonify({"message": "Menu price modified successfully"}), 200
-
-        return jsonify({"error": "Menu item not found"}), 404
-
-    return jsonify({"error": "Restaurant not found"}), 404
-
-
-@bp.route("/hash_password", methods=["POST"])
-def hash_password():
-    data = request.json
-    password = data.get("password")
-
-    if not password:
-        return jsonify({"error": "No password provided"}), 400
-
-    hashed_password = generate_password_hash(password)
-
-    return jsonify({"hashedPassword": hashed_password}), 200
+    return jsonify({"error": "Dish not found"}), 404
 
 
 @bp.route("/add_user", methods=["POST"])
@@ -252,20 +216,16 @@ def add_user():
     email = data.get("email")
     password_hash = data.get("password_hash")
     role = data.get("role")
-    print(username)
-    print(password_hash)
+
     role_bool = True if role == "Administrator" else False
     try:
-        new_user = User(
-            username=username, email=email, password_hash=password_hash, role=role_bool
-        )
+        new_user = User(username=username, email=email, role=role_bool)
+        new_user.set_password(password_hash)
         db.session.add(new_user)
         db.session.commit()
-        logging.info(f"User added: {new_user}")
         return jsonify({"message": "User added successfully"})
     except Exception as e:
         error_message = f"Error adding user: {str(e)}"
-        logging.error(error_message)
         return jsonify({"error": error_message}), 500
 
 
@@ -289,61 +249,126 @@ def delete_user():
 @bp.route("/change_name_item", methods=["POST"])
 def change_name_item():
     data = request.json
-    menu_id = data.get("menu_id")
-    menu_id = data.get("menu_id")
-    new_name = data.get("new_name")
+    dish_id = data.get("DishIdToModName")
+    new_name = data.get("NameToModify")
 
-    restaurant = Restaurant.query.get(menu_id)
+    dish = Dish.query.get(dish_id)
 
-    if restaurant:
-        Menu_item = Menu.query.get(menu_id)
+    if dish:
+        dish.name = new_name
+        db.session.commit()
 
-        if Menu_item:
-            Menu_item.name = new_name
-            db.session.commit()
+        return jsonify({"message": "Dish name modified successfully"}), 200
 
-            return jsonify({"message": "Menu price modified successfully"}), 200
+    return jsonify({"error": "Dish not found"}), 404
 
-        return jsonify({"error": "Menu item not found"}), 404
 
-    return jsonify({"error": "Restaurant not found"}), 404
+@bp.route("/change_ingredients", methods=["POST"])
+def change_ingredients():
+    data = request.json
+    dish_id = data.get("DishIDToModIngredients")
+    new_ingredients = data.get("NewDishIngredients")
+
+    dish = Dish.query.get(dish_id)
+
+    if dish:
+        dish.ingredients = new_ingredients
+        db.session.commit()
+
+        return jsonify({"message": "Ingredients modified successfully"}), 200
+
+    return jsonify({"error": "Dish not found"}), 404
 
 
 @bp.route("/change_image_item", methods=["POST"])
-def change_imege_item():
-    data = request.json
-    menu_id = data.get("menu_id")
-    menu_id = data.get("menu_id")
-    new_image = data.get("new_image")
+def change_image_item():
+    dish_id = request.form.get("DishIdToModImage")
+    new_image = request.files.get("DishImageChangeURL")
 
-    restaurant = Restaurant.query.get(menu_id)
+    dish = Dish.query.get(dish_id)
 
-    if restaurant:
-        Menu_item = Menu.query.get(menu_id)
+    if dish and new_image:
+        new_image_path = save_image(new_image, "dishes/")
+        old_image_path = dish.image  # old_image_path = "app/" + dish.image
+        if os.path.isfile(old_image_path):
+            os.remove(old_image_path)
 
-        if Menu_item:
-            Menu_item.image_path = new_image
-            db.session.commit()
+        dish.image = new_image_path
+        db.session.commit()
 
-            return jsonify({"message": "Menu price modified successfully"}), 200
+        return jsonify({"message": "Dish image modified successfully"}), 200
 
-        return jsonify({"error": "Menu item not found"}), 404
-
-    return jsonify({"error": "Restaurant not found"}), 404
+    return jsonify({"error": "Dish not found"}), 404
 
 
-@bp.route("/change_status_item", methods=["POST"])
-def change_status_item():
+@bp.route("/add_menu", methods=["POST"])
+def add_menu():
+    try:
+        data = request.json
+
+        menu_name = data.get("MenuName")
+        status = data.get("Status")
+        restaurant_id = data.get("RestaurantIdForMenu")
+        status_bool = True if status == "Active" else False
+
+        existing_restaurant = Restaurant.query.get(restaurant_id)
+
+        if not existing_restaurant:
+            error_message = "Restaurant not found"
+
+            return jsonify({"error": error_message}), 404
+
+        new_menu = Menu(name=menu_name, status=status_bool, restaurant_id=restaurant_id)
+        db.session.add(new_menu)
+        db.session.commit()
+
+        return jsonify({"message": "Dish added successfully"})
+    except Exception as e:
+        error_message = f"Internal Server Error: {str(e)}"
+
+        return jsonify({"error": error_message}), 500
+
+
+@bp.route("/delete_menu", methods=["POST"])
+def delete_menu():
+    try:
+        data = request.json
+        menu_id = data.get("MenuIdToDelete")
+
+        menu = Menu.query.get(menu_id)
+
+        if not menu:
+            return jsonify({"error": "Menu not found"}), 404
+
+        db.session.delete(menu)
+        db.session.commit()
+
+        return jsonify({"message": "Menu deleted successfully"})
+
+    except Exception as e:
+        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
+
+@bp.route("/delete_all_menu", methods=["POST"])
+def delete_all_menu():
+    try:
+        menus = Menu.query.all()
+
+        for menu in menus:
+            db.session.delete(menu)
+        db.session.commit()
+
+        return jsonify({"message": "All menu deleted successfully"})
+    except Exception as e:
+        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
+
+@bp.route("/change_status_menu", methods=["POST"])
+def change_status_menu():
     try:
         data = request.json
         menu_id = data.get("MenuId")
         new_status = data.get("newStatus")
-        print(new_status)
-
-        if not menu_id or new_status is None:
-            return jsonify({"error": "Invalid request data"}), 400
-
-        # Преобразование строкового значения 'active' в булево значение True
         if new_status.lower() == "active":
             new_status = True
         else:
@@ -359,7 +384,6 @@ def change_status_item():
         return jsonify({"message": "Menu status changed successfully"})
 
     except Exception as e:
-        logging.exception("An unexpected error occurred")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 
@@ -368,13 +392,12 @@ def fetch_restaurants():
     try:
         restaurants = Restaurant.query.order_by(Restaurant.id).all()
 
-        # Преобразование объектов заказов в словари для сериализации в JSON
         Restaurant_data = []
         for restaurant in restaurants:
             restaurant_data = {
                 "id": restaurant.id,
                 "name": restaurant.name,
-                "image": restaurant.image_path,
+                "image": restaurant.images,
                 "status": restaurant.status,
             }
             Restaurant_data.append(restaurant_data)
@@ -407,12 +430,12 @@ def get_restaurant_by_search_query(search_query):
 def search_restaurants():
     search_query = request.args.get("search_query", "")
     restaurants = get_restaurant_by_search_query(search_query)
-    # Преобразование результатов в формат JSON и возврат
+
     restaurants_data = [
         {
             "id": restaurant.id,
             "name": restaurant.name,
-            "image": restaurant.image_path,
+            "image": restaurant.images,
             "status": restaurant.status,
         }
         for restaurant in restaurants

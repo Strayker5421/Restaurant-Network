@@ -18,3 +18,12 @@ def menu_detail(restaurant_id):
     restaurant = Restaurant.query.get(restaurant_id)
     menus = restaurant.menus.all()
     return render_template("menu_detail.html", restaurant=restaurant, menus=menus)
+
+
+@bp.route("/search", methods=["GET"])
+def search():
+    search_query = request.args.get("q", "")
+    restaurants = Restaurant.query.filter(
+        Restaurant.name.ilike(f"%{search_query}%")
+    ).all()
+    return render_template("index.html", restaurants=restaurants)
