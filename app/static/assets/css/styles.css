@@ -3,9 +3,8 @@ body {
     font-style: italic;
     margin: 0;
     padding: 0;
-    background: linear-gradient(to right, #ffb6c1, #63a69f);
+    background-color: #fff;
     color: #343a40;
-    background-size: cover;
 }
 
 h1 {
@@ -16,31 +15,58 @@ h1 {
 .tabs, .sub-tabs {
     display: flex;
     justify-content: center;
-    background-color: #333;
-    padding: 10px;
 }
 
-button {
-    background-color: #4CAF50;
+.tabs {
+    align-items: flex-start;
+    padding: 300px 0 30px;
+}
+
+.sub-tabs {
+    align-items: flex-end;
+    padding: 0 0 50px;
+}
+
+button, .sub-tabs button {
+    font-family: 'EB Garamond', serif;
+    background-color: rgb(29, 29, 228);
     color: white;
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 4px;
+    border-radius: 30px;
     cursor: pointer;
     margin: 0 10px;
     transition: background-color 0.3s ease;
+    font-size: 1.2em;
 }
 
-button:hover {
-    background-color: #45a049;
+.sub-tab-content button {
+    margin: 5px;
+}
+
+button:hover, .sub-tabs button:hover {
+    background-color: darkblue;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .tab-content, .sub-tab-content {
     display: none;
+    animation: slide-up 0.5s ease forwards;
 }
 
- .center-container table.no-center {
-margin: initial;
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}   
+
+.center-container table.no-center {
+    margin: initial;
 }
 
 input[type="checkbox"], input[type="text"], input[type="number"], select {
@@ -58,14 +84,6 @@ label {
     color: #333;
 }
 
-.sub-tabs button {
-    background-color: #4CAF50;
-}
-
-.sub-tabs button:hover {
-    background-color: #45a049;
-}
-
 .action-buttons {
     display: none;
     justify-content: space-around;
@@ -73,67 +91,40 @@ label {
 }
 
 .action-buttons button {
-    background-color: #4CAF50;
+    background-color: rgb(29, 29, 228);
 }
 
 .action-buttons button:hover {
-    background-color: #45a049;
+    background-color: rgb(29, 29, 228);
 }
 
 table {
-width: 100%; /* Установите ширину таблицы в 100% */
-border-collapse: collapse;
-margin-top: 20px;
-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-overflow: hidden;
-border-radius: 8px;
-font-size: 1.30vmin;
-background-color: #fff;
+    width: auto;
+    min-width: 600px;
+    border-collapse: collapse;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    font-size: 2.00vmin;
+    background-color: #fff;
 }
-
 
 th, td {
-    border: 1px solid #ddd;
-    padding: 12px;
+    border: 2px solid #555;
+    padding: 12px 15px;
     text-align: left;
+    text-align: center;
 }
 
 th {
-    background-color: #4CAF50;
-    color: white;
-}
-
-tr:hover {
-    background-color: #f5f5f5;
-}th, td {
-padding: 12px 15px;
-text-align: left;
-border-bottom: 1px solid #ddd;
-}
-
-th {
-background-color: #4CAF50;
-color: #fff;
+    background-color: rgb(29, 29, 228);
+    color: #fff;
 }
 
 tr:hover {
 background-color: #f5f5f5;
-}
-
-td:first-child, th:first-child {
-border-top-left-radius: 8px;
-}
-
-td:last-child, th:last-child {
-border-top-right-radius: 8px;
-}
-
-th:first-child {
-border-bottom-left-radius: 8px;
-}
-
-th:last-child {
-border-bottom-right-radius: 8px;
 }
 
 .color-box {
@@ -149,60 +140,120 @@ border-bottom-right-radius: 8px;
     max-width: 400px;
     padding: 20px;
     box-sizing: border-box;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin: auto;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+}
+
+.sub-table-content input[type="text"],
+.sub-table-content input[type="search"],
+.sub-table-content input[type="number"] {
+    max-width: 500px;
 }
 
 form {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
-input[type="submit"] {
-    background-color: #4CAF50;
+form label {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+form input[type="number"],
+form input[type="text"],
+form input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+form input[type="number"],
+form input[type="text"] {
+    font-size: 16px;
+}
+
+form input[type="submit"] {
+    background-color: rgb(29, 29, 228);
     color: white;
-    padding: 10px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
+form input[type="submit"]:hover {
+    background-color: rgb(29, 29, 228);
+}
+
+form input[type="email"],
+form input[type="password"],
+form input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+form input[type="email"],
+form input[type="password"],
+form input[type="file"] {
+    font-size: 16px;
+}
+
+input[type="submit"] {
+    font-family: 'EB Garamond', serif;
+    background-color: rgb(29, 29, 228);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1.2em;
+}
 input[type="submit"]:hover {
-    background-color: #45a049;
+    background-color: rgb(29, 29, 228);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.toast-common {
-position: fixed;
-width: 300px;
-margin: 10px;
-opacity: 0.85;
-z-index: 9999;
+.toast-success-rectangle {
+    width: auto;
+    min-width: 200px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: rgba(29, 29, 228, 0.9);
+    color: white;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    text-align: center;
 }
 
-.toast-icon {
-width: 20px;
-height: 20px;
-margin-right: 10px;
-}
-
-.toast-title {
-font-weight: bold;
-}
-
-.toast-message {
-font-size: 14px;
-}
-
-.toast-success {
-background-color: #4CAF50;
-color: #fff;
-}
-
-.toast-error {
-background-color: #D9534F;
-color: #fff;
+.toast-error-rectangle {
+    width: auto;
+    min-width: 200px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #e74c3c;
+    color: white;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    text-align: center;
 }

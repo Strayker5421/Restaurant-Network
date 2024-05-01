@@ -40,6 +40,11 @@ class Menu(db.Model):
         "Dish", backref="menu", lazy="dynamic", cascade="all, delete-orphan"
     )
 
+    @staticmethod
+    def get_menu(menu_name):
+        menu = Menu.query.filter_by(name=menu_name).first()
+        return menu
+
 
 class Dish(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -48,16 +53,6 @@ class Dish(db.Model):
     ingredients = db.Column(db.String(500), nullable=False)
     image = db.Column(db.String(255), nullable=True)
     menu_id = db.Column(db.Integer, db.ForeignKey("menu.id"))
-    """ingredients = db.relationship(
-        "Ingredient", backref="dish", lazy="dynamic", cascade="all, delete-orphan"
-    )
-
-
-class Ingredient(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), unique=True, nullable=False)
-    weight = db.Column(db.Float, nullable=False)
-    dish_id = db.Column(db.Integer, db.ForeignKey("dish.id"))"""
 
 
 @login.user_loader

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<head>
+    <title>{{ restaurant.name }}</title>
+    <link rel="stylesheet" href="/static/assets/css/menu.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .menu_title {
+            font-family: Poppins;
+            font-weight: 300;
+            font-size: 20px;
+            color: #333333;
+            line-height: 1.4;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+          }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="fw-bold text-center mt-3">{{ restaurant.name }}</h1>
+        <div class="row center">
+            {% for menu in restaurant.menus %}
+                {% if menu.status %}
+                    <div class="col-sm-6 col-md-4 col-lg-3 mt-3">
+                        <div class="center">
+                            <img src="/static/images/menu4.tiff" style="width: 53px;" alt="{{ menu.name }}">
+                            <h2 class="card-title menu_title menu-item">{{ menu.name }}</h2>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <div class="menu-content" style="display: none;"></div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function(){
+            $(".menu-item").click(function(){
+                var menuContent = $(".menu-content");
+                var menuName = $(this).text();
+                if(menuContent.is(":visible")){
+                    menuContent.hide();
+                } else {
+                    $.get("/menu_template?menu_name=" + menuName, function(data){
+                        menuContent.html(data);
+                        menuContent.show();
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+{% endblock %}

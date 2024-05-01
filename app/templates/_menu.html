@@ -1,0 +1,60 @@
+<section class="resto_app_map">
+    <div class="container">
+        <div class="row mb-5 pb-5">
+            <div class="col-md-6 col-xl-5">
+                {% for dish in menu.dishes[:5] %}
+                    <div class="app_menu_item">
+                        <img class="rounded icon_app" src="{{ dish.image }}" />
+                        <div class="d-flex">
+                            <h3 class="app_menu_title my-auto">{{ dish.name }}</h3>
+                            <div class="lines mt-auto"></div>
+                            <p class="price_app my-auto">{{ dish.price }}$</p>
+                        </div>
+                        <p class="ingredients_app">{{ dish.ingredients }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-6 col-xl-5 offset-xl-2">
+                {% for dish in menu.dishes[5:10] %}
+                    <div class="app_menu_item">
+                        <img class="rounded icon_app" src="{{ dish.image }}" />
+                        <div class="d-flex">
+                            <h3 class="app_menu_title my-auto">{{ dish.name }}</h3>
+                            <div class="lines mt-auto"></div>
+                            <p class="price_app my-auto">{{ dish.price }}$</p>
+                        </div>
+                        <p class="ingredients_app">{{ dish.ingredients }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row mt-5 pt-5">
+            <div class="col-md-6 col-xl-5">
+                {% for dish in menu.dishes[10:15] %}
+                    <div class="app_menu_item">
+                        <img class="rounded icon_app" src="{{ dish.image }}" />
+                        <div class="d-flex">
+                            <h3 class="app_menu_title my-auto">{{ dish.name }}</h3>
+                            <div class="lines mt-auto"></div>
+                            <p class="price_app my-auto">{{ dish.price }}$</p>
+                        </div>
+                        <p class="ingredients_app">{{ dish.ingredients }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-6 col-xl-5 offset-xl-2">
+                {% for dish in menu.dishes[15:20] %}
+                    <div class="app_menu_item">
+                        <img class="rounded icon_app" src="{{ dish.image }}" />
+                        <div class="d-flex">
+                            <h3 class="app_menu_title my-auto">{{ dish.name }}</h3>
+                            <div class="lines mt-auto"></div>
+                            <p class="price_app my-auto">{{ dish.price }}$</p>
+                        </div>
+                        <p class="ingredients_app">{{ dish.ingredients }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
