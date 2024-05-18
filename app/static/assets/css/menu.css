@@ -2,14 +2,13 @@
   padding: 5rem 0;
 }
 
-.app_menu_title {
-  font-family: Poppins;
-  font-weight: 300;
-  font-size: 18px;
-  color: #333333;
-  line-height: 1.4;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+.menu_title {
+    font-weight: 300;
+    font-size: 20px;
+    color: #333333;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .price_app {
@@ -34,7 +33,7 @@
   line-height: 1.7;
 }
 
-.app_menu_item {
+.menu_item {
   transition: all 0.6s;
   margin-bottom: 2rem;
 }
@@ -65,4 +64,24 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.guest_menu_title {
+    font-family: Poppins;
+    font-weight: 300;
+    font-size: 20px;
+    color: #333333;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.subscription-title {
+    font-weight: 300;
+    font-size: 20px;
+    color: #333333;
+    line-height: 1.4;
+    letter-spacing: 2px;
+    margin-left: 2rem;
+    margin-right: 1.5rem;
 }

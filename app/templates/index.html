@@ -27,14 +27,17 @@
                     </div>
                 {% else %}
                 {% endif %}
-                <div class="py-4"><span class="badge bg-primary mb-2">{{ "Open" if restaurant.status else "Closed" }}</span>
-                {% if restaurant.status %}
-                    <a href="{{ url_for('main.show_menus', restaurant_id=restaurant.id) }}" class="text-decoration-none text-dark">
+                <div class="py-4">
+                    <span class="badge bg-primary mb-2">
+                        {% if restaurant.status %}
+                            <a href="{{ url_for('main.show_qr_code', qr_code_type='restaurant', name=restaurant.name) }}" style="color: white;">QR code</a>
+                        {% else %}
+                            Inactive
+                        {% endif %}
+                    </span>
+                    <a href="{{ url_for('main.menus_list', restaurant_id=restaurant.id) }}" class="text-decoration-none text-dark">
                         <h4 class="fw-bold">{{ restaurant.name }}</h4>
                     </a>
-                {% else %}
-                    <h4 class="fw-bold">{{ restaurant.name }}</h4>
-                {% endif %}
                 </div>
             </div>
         </div>

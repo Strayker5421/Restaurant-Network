@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, Restaurant, Menu
+from app.models import User, Restaurant, Menu, Dish
 
 
 app = create_app()
@@ -12,4 +12,5 @@ def make_shell_context():
         "User": User,
         "Restaurant": Restaurant,
         "Menu": Menu,
+        "Dish": Dish,
     }

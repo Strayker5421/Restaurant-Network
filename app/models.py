@@ -2,6 +2,7 @@ from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import ARRAY
+from datetime import datetime
 
 
 class User(UserMixin, db.Model):
@@ -10,6 +11,9 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(256))
     role = db.Column(db.Boolean, default=False)
+    restaurants = db.relationship(
+        "Restaurant", backref="user", lazy="dynamic", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -29,16 +33,21 @@ class Restaurant(db.Model):
     menus = db.relationship(
         "Menu", backref="restaurant", lazy="dynamic", cascade="all, delete-orphan"
     )
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
 
 class Menu(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     status = db.Column(db.Boolean, default=False)
+    expiration_date = db.Column(db.DateTime, index=True, default=datetime.now)
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"))
     dishes = db.relationship(
         "Dish", backref="menu", lazy="dynamic", cascade="all, delete-orphan"
     )
+
+    def check_status(self):
+        return datetime.utcnow() < self.expiration_date
 
     @staticmethod
     def get_menu(menu_name):

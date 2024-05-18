@@ -1,0 +1,20 @@
+<head>
+    <title>{{ menu.name }}</title>
+    <link rel="stylesheet" href="/static/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/assets/css/styles.min.css">
+    <link rel="stylesheet" href="/static/assets/css/menu.css">
+</head>
+<body>
+    <div class="container">
+        <br>
+        <div class="center">
+            <img src="/static/images/menu4.tiff" style="width: 60px;" alt="{{ menu.name }}">
+            <h2 class="card-title guest_menu_title menu-item" style="font-size: 34px;">{{ menu.name }}</h2>
+        </div>
+        <div class="row center">
+            <div>
+                {% include '_menu.html' %}
+            </div>
+        </div>
+    </div>
+</body>

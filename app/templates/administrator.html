@@ -44,52 +44,58 @@
             <button onclick="openSubTab('changeRestaurantImage')">Change restaurant image</button>
         </div>
 
-        <div id="viewRestaurants" class="sub-table-content"></div>
+        <div id="viewRestaurants" class="sub-table-content">
+            <form id = "viewRestaurantsForm">
+                <input type="number" id="UserIdInputView" placeholder="Enter user id" oninput="loadRestaurant()" required>
+                <div id="viewRestaurantContainer"></div>
+            </form>
+        </div>
 
         <div id="searchRestaurant" class="sub-table-content">
             <form id="searchForm">
+                <input type="number" id="UserIdInputSearch" placeholder="Enter user id" oninput="searchRestaurants()" required>
                 <input type="text" id="searchQuery" placeholder="Search by restaurants parameters" oninput="searchRestaurants()" required>
             </form>
-            
+
             <div id="searchResults"></div>
         </div>
-        
+
         <div id="changeRestaurantName" class="sub-tab-content">
             <form id="changeRestaurantNameForm">
                 <label for="RestaurantIdToModify">Restaurant ID:</label>
                 <input type="number" id="RestaurantIdToModify" placeholder="Enter restaurant ID" required min="1">
-        
+
                 <label for="NewRestaurantName">New Restaurant Name:</label>
                 <input type="text" id="NewRestaurantName" placeholder="Enter new restaurant name" required>
-        
+
                 <input type="submit" value="Change Restaurant Name">
             </form>
         </div>
-        
+
         <div id="changeRestaurantImage" class="sub-tab-content">
             <form id="changeRestaurantImageForm">
                 <label for="RestaurantIdToModifyImage">Restaurant ID:</label>
                 <input type="number" id="RestaurantIdToModifyImage" placeholder="Enter restaurant ID" required min="1">
-                
+
                 <label for="NewRestaurantImage">New Restaurant Image (up to 3 images):</label>
                 <input type="file" id="NewRestaurantImage" name="New_Restaurant_image" accept="image/*" multiple>
                 <small id="imageError" style="color: red;"></small>
-        
+
                 <input type="submit" value="Change Restaurant Image">
             </form>
         </div>
 
-            <div id="changeStatusRestaurant" class="sub-tab-content"> 
+            <div id="changeStatusRestaurant" class="sub-tab-content">
                 <form id="changeStatusRestaurantForm">
                     <label for="RestaurantId">Restaurant ID:</label>
                     <input type="number" id="RestaurantId" placeholder="Enter Restaurant ID" required min="1">
-                
+
                     <label for="newStatus">New Status:</label>
                     <select id="newStatus" required>
                         <option value="Open">Open</option>
                         <option value="Close">Close</option>
                     </select>
-            
+
                     <input type="submit" value="Change Status">
                 </form>
             </div>
@@ -100,22 +106,34 @@
                     <button type="submit">Delete Restaurant</button>
                     <button type="button" onclick="confirmDeleteAllRestaurants()">Delete All Restaurants</button>
                 </form>
+
+                <form id="deleteUserRestaurantsForm">
+                    <label for="UserIdToDeleteRestaurants">User ID:</label>
+                    <input type="number" id="UserIdToDeleteRestaurants" placeholder="Enter User ID" required min="1">
+                    <button type="button" onclick="confirmDeleteUserRestaurants()">Delete User's Restaurants</button>
+                </form>
             </div>
+
             <div id="addRestaurant" class="sub-tab-content">
                 <form id="addRestaurantForm" method="post" enctype="multipart/form-data">
+                    <label for="UserId">User Id:</label>
+                    <input type="number" id="UserId" placeholder="Enter User ID" required min="1">
+
                     <label for="RestaurantName">Restaurant Name:</label>
                     <input type="text" id="RestaurantName" placeholder="Enter restaurant name" required>
-            
+
                     <label for="Status">Status:</label>
                     <select id="Status" required>
                         <option value="Open">Open</option>
                         <option value="Close">Close</option>
                     </select>
-            
+
                     <label for="RestaurantImage">Restaurant Image (up to 3 images):</label>
                     <input type="file" id="RestaurantImage" name="Restaurant_image" accept="image/*" multiple>
                     <small id="imageError" style="color: red;"></small>
-            
+
+                    <div id="qrCodeContainerRestaurant"></div>
+
                     <input type="submit" value="Add Restaurant">
                 </form>
             </div>
@@ -138,17 +156,17 @@
             <div id="viewDishContainer"></div>
             </form>
         </div>
-        
+
         <div id="searchDish" class="sub-table-content">
             <form id="searchDishForm">
                 <input type="number" id="MenuIdInputSearch" placeholder="Enter menu number" oninput="searchDishes()" required>
                 <input type="text" id="searchQueryDish" placeholder="Search dish parameters" oninput="searchDishes()" required>
                 <input type="submit" value="Search" style="display: none;">
             </form>
-            
+
             <div id="searchResultsDish"></div>
         </div>
-        
+
         <div id="AddDish" class="sub-tab-content">
             <form id="addDishItemForm">
 
@@ -157,13 +175,13 @@
 
                 <label for="DishItemName">Dish name:</label>
                 <input type="text" id="DishItemName" placeholder="Enter dish name" required>
-                
+
                 <label for="DishItemIngredients">Dish ingridients:</label>
                 <input type="text" id="DishItemIngredients" placeholder="Enter dish ingredients" required>
 
                 <label for="DishItemPrice">Dish price:</label>
                 <input type="number" step="0.01" id="DishItemPrice" placeholder="Enter dish price" required min="0">
-    
+
                 <label for="DishItemImageURL">Image URLs:</label>
                 <input type="file" id="DishItemImageURL" name="Dish_images">
 
@@ -179,7 +197,7 @@
 
                     <label for="NewDishPrice">Dish price:</label>
                     <input type="number" step="0.01" id="NewDishPrice" placeholder="Enter dish price" required min="0">
-        
+
                     <input type="submit" value="Change price dish">
                 </form>
             </div>
@@ -192,7 +210,7 @@
 
                     <label for="NewDishIngredients">Dish ingredients:</label>
                     <input type="text" id="NewDishIngredients" placeholder="Enter dish ingredients" required min="0">
-        
+
                     <input type="submit" value="Change ingredients dish">
                 </form>
             </div>
@@ -202,10 +220,10 @@
 
                 <label for="DishIdToModName">Dish item ID:</label>
                 <input type="number" id="DishIdToModName" placeholder="Enter dish ID" required min="1">
-    
+
                 <label for="NameToModify">Name:</label>
                 <input type="text" id="NameToModify" placeholder="Enter dish name" required>
-    
+
                 <input type="submit" value="Change name dish">
             </form>
         </div>
@@ -218,22 +236,35 @@
 
                 <label for="DishImageChangeURL">Image URLs:</label>
                 <input type="file" id="DishImageChangeURL" name="Dish_images">
-    
+
                 <input type="submit" value="Change image dish">
             </form>
         </div>
-    
+
         <div id="DeleteDish" class="sub-tab-content">
             <form id="DeleteDishForm">
                 <label for="DishIdToDelete">Dish ID to delete:</label>
                 <input type="number" id="DishIdToDelete" placeholder="Enter dish ID" required min="1">
                 <button type="submit">Delete dish</button>
             </form>
-        
+
             <form id="deleteAllDishIdForm" onsubmit="confirmDeleteAllDishes(); return false;">
                 <button type="submit">Delete all dishes</button>
             </form>
+
+            <form id="deleteAllDishesForMenuForm" onsubmit="confirmDeleteAllDishesForMenu(); return false;">
+                <label for="MenuIdToDeleteDishes">Menu ID:</label>
+                <input type="number" id="MenuIdToDeleteDishes" placeholder="Enter menu ID" required min="1">
+                <button type="submit">Delete all dishes for menu</button>
+            </form>
+
+            <form id="deleteAllDishesForUserForm" onsubmit="confirmDeleteAllDishesForUser(); return false;">
+                <label for="UserIdToDeleteDishes">User ID:</label>
+                <input type="number" id="UserIdToDeleteDishes" placeholder="Enter user ID" required min="1">
+                <button type="submit">Delete all dishes for user</button>
+            </form>
         </div>
+
     </div>
 
     <div id="menu" class="tab-content">
@@ -252,7 +283,7 @@
             <div id="viewMenuContainer"></div>
             </form>
         </div>
-        
+
         <div id="searchMenu" class="sub-table-content">
             <form id="searchMenuForm">
                 <input type="number" id="restaurantIdInputSearch" placeholder="Enter restaurant number" oninput="searcMenus()" required>
@@ -261,46 +292,59 @@
             </form>
 
             <div id="searchResultsMenu"></div>
-        </div>     
+        </div>
 
-            <div id="changeStatusMenu" class="sub-tab-content"> 
+            <div id="changeStatusMenu" class="sub-tab-content">
                 <form id="changeStatusMenuForm">
                     <label for="MenuId">Menu ID:</label>
                     <input type="number" id="MenuId" placeholder="Enter menu ID" required min="1">
-                
+
                     <label for="newStatusMenu">New Status:</label>
                     <select id="newStatusMenu" required>
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
                     </select>
-            
+
                     <input type="submit" value="Change Status">
                 </form>
             </div>
 
-        <div id="deleteMenu" class="sub-tab-content">
-            <form id="deleteMenuForm">
-                <label for="MenuIdToDelete">Menu ID:</label>
-                <input type="number" id="MenuIdToDelete" placeholder="Enter menu ID" required min="1">
-                <button type="submit">Delete Menu</button>
-                <button type="button" onclick="confirmDeleteAllMenu()">Delete all menu</button>
-            </form>
-        </div>
+            <div id="deleteMenu" class="sub-tab-content">
+                <form id="deleteMenuForm">
+                    <label for="MenuIdToDelete">Menu ID:</label>
+                    <input type="number" id="MenuIdToDelete" placeholder="Enter menu ID" required min="1">
+                    <button type="submit">Delete Menu</button>
+                    <button type="button" onclick="confirmDeleteAllMenu()">Delete all menu</button>
+
+                    <label for="RestaurantIdToDeleteMenus">Restaurant ID:</label>
+                    <input type="number" id="RestaurantIdToDeleteMenus" placeholder="Enter Restaurant ID" required min="1">
+                    <button type="button" onclick="confirmDeleteAllMenuForRestaurant()">Delete all menu for restaurant</button>
+
+                    <label for="UserIdToDeleteMenusFor">User ID:</label>
+                    <input type="number" id="UserIdToDeleteMenusFor" placeholder="Enter User ID" required min="1">
+                    <button type="button" onclick="confirmDeleteAllMenuForUser()">Delete all menu for user</button>
+                </form>
+            </div>
+
 
         <div id="addMenu" class="sub-tab-content">
             <form id="addMenuForm">
-
                 <label for="RestaurantIdForMenu">Restaurant ID:</label>
                 <input type="text" id="RestaurantIdForMenu" placeholder="Enter restaurant ID" required>
-        
+
                 <label for="MenuName">Menu Name:</label>
                 <input type="text" id="MenuName" placeholder="Enter menu name" required>
 
-                <label for="StatusMenu">Status:</label>
-                <select id="StatusMenu" required>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
+                <label for="subscriptionLength">Subscription Length:</label>
+                <select id="subscriptionLength">
+                    <option value="None">None</option>
+                    <option value="5 minutes">5 minutes</option>
+                    <option value="1 hour">1 hour</option>
+                    <option value="1 day">1 day</option>
                 </select>
+
+                <div id="qrCodeContainerMenus"></div>
+
                 <input type="submit" value="Add menu">
             </form>
         </div>
@@ -309,13 +353,13 @@
             <form id="changeMenuNameForm">
                 <label for="MenuIdToModify">Menu ID:</label>
                 <input type="number" id="MenuIdToModify" placeholder="Enter menu ID" required min="1">
-        
+
                 <label for="NewMenuName">New Menu Name:</label>
                 <input type="text" id="NewMenuName" placeholder="Enter new menu name" required>
-        
+
                 <input type="submit" value="Change Menu Name">
             </form>
-        </div>        
+        </div>
     </div>
 
         <div id="users" class="tab-content">
@@ -323,15 +367,15 @@
                 <button onclick="openSubTab('addUser')">Add</button>
                 <button onclick="openSubTab('deleteUser')">Delete</button>
             </div>
-        
+
             <div id="addUser" class="sub-tab-content">
                 <form id="addUserForm">
                     <label for="UserName">User name:</label>
                     <input type="text" id="UserName" placeholder="Enter user name" required>
-        
+
                     <label for="UserEmail">Email:</label>
                     <input type="email" id="UserEmail" placeholder="Enter email" required>
-                    
+
                     <label for="UserPassword">Password:</label>
                     <input type="password" id="UserPassword" placeholder="Enter password" required>
 
@@ -340,11 +384,11 @@
                         <option value="Active">Administrator</option>
                         <option value="Inactive">User</option>
                     </select>
-        
+
                     <input type="submit" value="Add user">
                 </form>
             </div>
-        
+
             <div id="deleteUser" class="sub-tab-content">
                 <form id="deleteUserForm">
                     <label for="UserIdToDelete">User ID to Delete:</label>
@@ -353,11 +397,11 @@
                 </form>
             </div>
         </div>
-    
+
     <script>
 
 const commonOptions = {
-    positionClass: 'toast-top',  
+    positionClass: 'toast-top',
     progressBar: true,
     timeOut: 3000,
     tapToDismiss: false,
@@ -372,7 +416,7 @@ function openSubTab(subTabName) {
     var subTab = document.getElementById(subTabName);
     var subTabs = document.getElementsByClassName("sub-tab-content");
     var subTables = document.getElementsByClassName("sub-table-content");
-    
+
     for (var i = 0; i < subTabs.length; i++) {
         if (subTabs[i] !== subTab) {
             subTabs[i].style.display = "none";
@@ -385,10 +429,6 @@ function openSubTab(subTabName) {
         }
     }
 
-    if (subTabName === "viewRestaurants") {
-        loadRestaurant();
-    }
-
     subTab.style.display = subTab.style.display === "block" ? "none" : "block";
 }
 
@@ -396,7 +436,7 @@ function openTab(tabName) {
     var tab = document.getElementById(tabName);
     var tabs = document.getElementsByClassName("tab-content");
     var subTables = document.getElementsByClassName("sub-table-content");
-    
+
     for (var i = 0; i < tabs.length; i++) {
         if (tabs[i] !== tab) {
             tabs[i].style.display = "none";
@@ -408,14 +448,14 @@ function openTab(tabName) {
             subTables[i].style.display = "none";
         }
     }
-    
+
     tab.style.display = window.getComputedStyle(tab).display === "block" ? "none" : "block";
 }
 
 function confirmDeleteAllData() {
     event.preventDefault();
     var confirmDelete = confirm("Are you sure you want to delete all data?");
-    
+
     if (confirmDelete) {
         axios.post('/delete_all_data')
             .then(response => {
@@ -437,10 +477,10 @@ function confirmDeleteAllData() {
 
 document.getElementById('changeStatusRestaurant').addEventListener('submit', function (event) {
     event.preventDefault();
-   
+
     const RestaurantId = document.getElementById('RestaurantId').value;
     const newStatus = document.getElementById('newStatus').value;
- 
+
     changeStatusRestaurant(RestaurantId, newStatus);
 });
 
@@ -497,6 +537,32 @@ function deleteAllRestaurants() {
         });
 }
 
+function confirmDeleteUserRestaurants() {
+    var userId = document.getElementById('UserIdToDeleteRestaurants').value;
+    var confirmDelete = confirm("Are you sure you want to delete all restaurants for this user?");
+    if (confirmDelete) {
+        deleteUserRestaurants(userId);
+    }
+}
+
+function deleteUserRestaurants(userId) {
+    axios.post(`/delete_all_restaurants_user/${userId}`)
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All restaurants for this user successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting restaurants for this user', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
 function deleteRestaurant(RestaurantIdToDelete) {
     axios.post('/delete_restaurant', {
         RestaurantId: RestaurantIdToDelete
@@ -519,7 +585,7 @@ function deleteRestaurant(RestaurantIdToDelete) {
 
 document.getElementById('changeRestaurantNameForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    
+
     const RestaurantId = document.getElementById('RestaurantIdToModify').value;
     const newRestaurantName = document.getElementById('NewRestaurantName').value;
 
@@ -527,8 +593,8 @@ document.getElementById('changeRestaurantNameForm').addEventListener('submit', f
 });
 
 function changeRestaurantName(RestaurantId, newRestaurantName) {
-    axios.post('/change_restaurant_name', { 
-        RestaurantId : RestaurantId, 
+    axios.post('/change_restaurant_name', {
+        RestaurantId : RestaurantId,
         newRestaurantName : newRestaurantName
     })
     .then(response => {
@@ -549,7 +615,7 @@ function changeRestaurantName(RestaurantId, newRestaurantName) {
 
 document.getElementById('changeRestaurantImageForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    
+
     const RestaurantId = document.getElementById('RestaurantIdToModifyImage').value;
     const newRestaurantImage = document.getElementById('NewRestaurantImage').files;
 
@@ -558,7 +624,7 @@ document.getElementById('changeRestaurantImageForm').addEventListener('submit', 
             ...commonOptions,
             iconClass: 'toast-error-rectangle'
         });
-        return; 
+        return;
     }
 
     const formData = new FormData();
@@ -594,6 +660,7 @@ document.getElementById('addRestaurantForm').addEventListener('submit', function
 
     const RestaurantName = document.getElementById('RestaurantName').value;
     const Status = document.getElementById('Status').value;
+    const User_id = document.getElementById('UserId').value;
     const RestaurantImageFiles = document.getElementById('RestaurantImage').files;
 
     if (RestaurantImageFiles.length > 3) {
@@ -601,12 +668,13 @@ document.getElementById('addRestaurantForm').addEventListener('submit', function
             ...commonOptions,
             iconClass: 'toast-error-rectangle'
         });
-        return;  
+        return;
     }
 
     const formData = new FormData();
     formData.append('RestaurantName', RestaurantName);
     formData.append('Status', Status);
+    formData.append('UserID', User_id);
 
     for (const file of RestaurantImageFiles) {
         formData.append('RestaurantImage', file);
@@ -616,6 +684,9 @@ document.getElementById('addRestaurantForm').addEventListener('submit', function
 });
 
 function addRestaurant(formData) {
+    const qrCodeContainerId = 'qrCodeContainerRestaurant';
+    const qrCodeContainer = document.getElementById(qrCodeContainerId);
+    qrCodeContainer.innerHTML = '';
     axios.post('/add_restaurant', formData)
         .then(response => {
             console.log(response.data);
@@ -623,6 +694,8 @@ function addRestaurant(formData) {
                 ...commonOptions,
                 iconClass: 'toast-success-rectangle'
             });
+            const qrCodeImage = response.data.qr_code_path;
+            displayQRCode(qrCodeImage, qrCodeContainerId);
         })
         .catch(error => {
             console.error('Error adding restaurant:', error);
@@ -633,12 +706,25 @@ function addRestaurant(formData) {
         });
 }
 
+function displayQRCode(qrCodeImage, containerId) {
+    const img = document.createElement('img');
+    img.src = qrCodeImage;
+
+    const qrCodeContainer = document.getElementById(containerId);
+    if (qrCodeContainer) {
+        qrCodeContainer.innerHTML = '';
+        qrCodeContainer.appendChild(img);
+    } else {
+        console.error(`Element with id "${containerId}" not found.`);
+    }
+}
+
 document.getElementById('addDishItemForm').addEventListener('submit', function (event) {
-    event.preventDefault();  
-    
+    event.preventDefault();
+
     const DishItemName = document.getElementById('DishItemName').value;
-    const DishItemPrice = document.getElementById('DishItemPrice').value; 
-    const DishIdForMenu = document.getElementById('DishIdForMenu').value; 
+    const DishItemPrice = document.getElementById('DishItemPrice').value;
+    const DishIdForMenu = document.getElementById('DishIdForMenu').value;
     const DishItemIngredients = document.getElementById('DishItemIngredients').value;
     const DishItemImageURL = document.getElementById('DishItemImageURL').files[0];
 
@@ -681,7 +767,7 @@ function DeleteDish(DishIdToDelete) {
         DishIdToDelete: DishIdToDelete
     })
     .then(response => {
-        console.log('Response:', response.data);  
+        console.log('Response:', response.data);
         toastr.success('Dish successfully deleted', 'Success', {
             ...commonOptions,
             iconClass: 'toast-success-rectangle'
@@ -718,13 +804,80 @@ function deleteAllDishes() {
     .catch(error => console.error('Error:', error));
 }
 
+function confirmDeleteAllDishesForMenu() {
+    var menuId = document.getElementById('MenuIdToDeleteDishes').value;
+    if (!menuId) {
+        toastr.error('Menu ID is required', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+        return;
+    }
+    var confirmDelete = confirm("Are you sure you want to delete all dishes for this menu?");
+    if (confirmDelete) {
+        deleteAllDishesForMenu(menuId);
+    }
+}
+
+function deleteAllDishesForMenu(menuId) {
+    axios.post('/delete_all_dishes_for_menu', { menu_id: menuId })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All dishes for the menu successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting all dishes for the menu', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+function confirmDeleteAllDishesForUser() {
+    var userId = document.getElementById('UserIdToDeleteDishes').value;
+    if (!userId) {
+        toastr.error('User ID is required', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+        return;
+    }
+    var confirmDelete = confirm("Are you sure you want to delete all dishes for this user?");
+    if (confirmDelete) {
+        deleteAllDishesForUser(userId);
+    }
+}
+
+function deleteAllDishesForUser(userId) {
+    axios.post('/delete_all_dishes_for_user', { user_id: userId })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All dishes for the user successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting all dishes for the user', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+
 document.getElementById('ChangePriceItem').addEventListener('submit', function (event) {
     event.preventDefault();
     const DishIDToModPrice = document.getElementById('DishIDToModPrice').value;
     const NewDishPrice = document.getElementById('NewDishPrice').value;
     ChangePriceItem(DishIDToModPrice, NewDishPrice);
 });
-   
+
 function ChangePriceItem(DishIDToModPrice, NewDishPrice) {
     axios.post('/change_price_item', {
         DishIDToModPrice: DishIDToModPrice,
@@ -752,7 +905,7 @@ document.getElementById('ChangeNameItemForm').addEventListener('submit', functio
     const NameToModify = document.getElementById('NameToModify').value;
     ChangeNameItem(DishIdToModName, NameToModify);
 });
-   
+
 function ChangeNameItem(DishIdToModName, NameToModify) {
     axios.post('/change_name_item', {
         DishIdToModName: DishIdToModName,
@@ -835,10 +988,10 @@ function ChangeImageItem(formData) {
 
 document.getElementById('changeStatusMenuForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    
+
     const MenuId = document.getElementById('MenuId').value;
     const newStatus = document.getElementById('newStatusMenu').value;
- 
+
     changeStatusMenu(MenuId, newStatus);
 });
 
@@ -874,7 +1027,7 @@ function DeleteMenu(MenuIdToDelete) {
         MenuIdToDelete: MenuIdToDelete
     })
     .then(response => {
-        console.log('Response:', response.data);  
+        console.log('Response:', response.data);
         toastr.success('Menu successfully deleted', 'Success', {
             ...commonOptions,
             iconClass: 'toast-success-rectangle'
@@ -889,12 +1042,78 @@ function DeleteMenu(MenuIdToDelete) {
     });
 }
 
+function confirmDeleteAllMenuForRestaurant() {
+    var restaurantId = document.getElementById('RestaurantIdToDeleteMenus').value;
+    if (!restaurantId) {
+        toastr.error('Restaurant ID is required', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+        return;
+    }
+    var confirmDelete = confirm("Are you sure you want to delete all menus for this restaurant?");
+    if (confirmDelete) {
+        deleteAllMenuForRestaurant(restaurantId);
+    }
+}
+
+function deleteAllMenuForRestaurant(restaurantId) {
+    axios.post('/delete_all_menu_for_restaurant', { restaurant_id: restaurantId })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All menus for the restaurant successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting all menus for the restaurant', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+function confirmDeleteAllMenuForUser() {
+    var userId = document.getElementById('UserIdToDeleteMenusFor').value;
+    if (!userId) {
+        toastr.error('User ID is required', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+        return;
+    }
+    var confirmDelete = confirm("Are you sure you want to delete all menus for this user?");
+    if (confirmDelete) {
+        deleteAllMenuForUser(userId);
+    }
+}
+
+function deleteAllMenuForUser(userId) {
+    axios.post('/delete_all_menu_for_user', { user_id: userId })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All menus for the user successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting all menus for the user', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
 document.getElementById('changeMenuNameForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    
+
     const MenuId = document.getElementById('MenuIdToModify').value;
     const NewMenuName = document.getElementById('NewMenuName').value;
- 
+
     changeMenuName(MenuId, NewMenuName);
 });
 
@@ -945,20 +1164,23 @@ function deleteAllMenu() {
 }
 
 document.getElementById('addMenuForm').addEventListener('submit', function (event) {
-    event.preventDefault();  
-    
+    event.preventDefault();
+
     const MenuName = document.getElementById('MenuName').value;
-    const Status = document.getElementById('StatusMenu').value;
-    const RestaurantIdForMenu = document.getElementById('RestaurantIdForMenu').value; 
-    
-    AddMenu(MenuName, Status, RestaurantIdForMenu);
+    const SubscriptionLength = document.getElementById('subscriptionLength').value;
+    const RestaurantIdForMenu = document.getElementById('RestaurantIdForMenu').value;
+
+    AddMenu(MenuName, SubscriptionLength, RestaurantIdForMenu);
 });
 
-function AddMenu(MenuName, Status, RestaurantIdForMenu) {
+function AddMenu(MenuName, SubscriptionLength, RestaurantIdForMenu) {
+    const qrCodeContainerId = 'qrCodeContainerMenus';
+    const qrCodeContainer = document.getElementById(qrCodeContainerId);
+    qrCodeContainer.innerHTML = '';
     axios.post('/add_menu', {
             MenuName : MenuName,
-            Status : Status,
-            RestaurantIdForMenu : RestaurantIdForMenu, 
+            SubscriptionLength : SubscriptionLength,
+            RestaurantIdForMenu : RestaurantIdForMenu,
         })
         .then(response => {
             console.log(response.data);
@@ -966,6 +1188,8 @@ function AddMenu(MenuName, Status, RestaurantIdForMenu) {
                 ...commonOptions,
                 iconClass: 'toast-success-rectangle'
             });
+            const qrCodeImage = response.data.qr_code_path;
+            displayQRCode(qrCodeImage, qrCodeContainerId);
         })
         .catch(error => {
             console.error('Error add menu:', error);
@@ -978,7 +1202,7 @@ function AddMenu(MenuName, Status, RestaurantIdForMenu) {
 
 document.getElementById('addUserForm').addEventListener('submit', async function (event) {
     event.preventDefault();
-    
+
     const username = document.getElementById('UserName').value;
     const email = document.getElementById('UserEmail').value;
     const role = document.getElementById('role').value;
@@ -1035,16 +1259,18 @@ function deleteUser(user_id) {
     });
 }
 
- 
+
 function searchRestaurants() {
     const searchQuery = document.getElementById('searchQuery').value;
-    axios.get(`/search_restaurants?search_query=${searchQuery}`)
+    const user_id = document.getElementById('UserIdInputSearch').value;
+
+    axios.get(`/search_restaurants?user_id=${user_id}&search_query=${searchQuery}`)
         .then(response => {
-            const restaurants = response.data; 
-            const searchResultsContainer = document.getElementById('searchResults'); 
+            const restaurants = response.data;
+            const searchResultsContainer = document.getElementById('searchResults');
             const table = document.createElement('table');
 
-            const columns = ['id', 'name', 'image', 'status']; 
+            const columns = ['id', 'name', 'image', 'status'];
 
             const headerRow = document.createElement('tr');
             columns.forEach(column => {
@@ -1086,10 +1312,12 @@ function searchRestaurants() {
 
 
 function loadRestaurant() {
-    axios.get('/fetch_restaurants')
+    const user_id = document.getElementById('UserIdInputView').value;
+
+    axios.get(`/fetch_restaurants/${user_id}`)
         .then(response => {
-            const restaurants = response.data; 
-            const restaurantsContainer = document.getElementById('viewRestaurants');
+            const restaurants = response.data;
+            const restaurantsContainer = document.getElementById('viewRestaurantContainer');
             const table = document.createElement('table');
 
             const columns = ['id', 'name', 'image', 'status'];
@@ -1137,6 +1365,7 @@ function loadRestaurant() {
             console.error('Error fetching restaurant:', error);
         });
 }
+
 
 function searchMenus() {
 
