@@ -1,4 +1,4 @@
-from app import db, login
+from app import db, login, socketio
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -46,8 +46,24 @@ class Menu(db.Model):
         "Dish", backref="menu", lazy="dynamic", cascade="all, delete-orphan"
     )
 
-    def check_status(self):
-        return datetime.utcnow() < self.expiration_date
+    def check_subscription(self):
+        new_status = datetime.now() < self.expiration_date
+        if new_status != self.status:
+            self.status = new_status
+            db.session.commit()
+
+            restaurant = self.restaurant
+            active_menus = Menu.query.filter_by(
+                restaurant_id=restaurant.id, status=True
+            ).count()
+            if active_menus == 0:
+                restaurant.status = False
+            else:
+                restaurant.status = True
+            db.session.commit()
+        socketio.emit(
+            "subscription_update", {"menu_id": self.id, "status": self.status}
+        )
 
     @staticmethod
     def get_menu(menu_name):

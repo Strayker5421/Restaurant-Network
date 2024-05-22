@@ -1,0 +1,34 @@
+<head>
+    <link rel="stylesheet" href="/static/assets/css/menu_test.css">
+</head>
+<body>
+    <div class="container">
+        <div class="modal">
+            <input type="radio" name="image-slider" class="to-one" checked>
+            <input type="radio" name="image-slider" class="to-two">
+            <input type="radio" name="image-slider" class="to-three">
+            <div class="images">
+                <img src="http://vectorlogofree.com/wp-content/uploads/2014/04/23656-apple-logo-icon-vector-icon-vector-eps.png" class="slide-one">
+                <img src="http://vignette4.wikia.nocookie.net/memoryalpha/images/0/02/Linux_icon.png/revision/latest?cb=20141003183250&path-prefix=en" class="slide-two">
+                <img src="http://vignette2.wikia.nocookie.net/apps/images/2/24/Windows-8-Logo-small.png/revision/latest?cb=20130627215459" class="slide-three">
+            </div>
+        </div>
+
+
+        <div class="menu-page">
+            <img src="/static/images/menu_template.png" class="menu-template" alt="Menu Template">
+            <div class="menu-content">
+                {% for dish in menu.dishes[0:3] %}
+                    <div class="dish">
+                        <img src="{{ dish.image }}" class="dish-image" alt="{{ dish.name }}">
+                        <div class="dish-details">
+                            <h2>{{ dish.name }}</h2>
+                            <p>{{ dish.ingredients }}</p>
+                            <p>{{ dish.price }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>

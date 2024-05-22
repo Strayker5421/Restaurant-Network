@@ -1,0 +1,29 @@
+services:
+  app:
+    image: ir0h/resos
+    ports:
+      - 0.0.0.0:5001:5001
+    environment:
+      DATABASE_URL: postgresql://postgres:20453843@resos_postgres:5432/resos_db
+    depends_on:
+      - resos_postgres
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+  resos_postgres:
+    image: postgres
+    volumes:
+      - resos-postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 20453843
+      POSTGRES_DB: resos_db
+
+volumes:
+  resos-postgres-data:

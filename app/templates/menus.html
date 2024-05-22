@@ -15,7 +15,7 @@
                     <div class="col-sm-6 col-md-4 col-lg-3 mt-3">
                         <h2 class="card-title menu_title">{{ menu.name }}</h2>
                     </div>
-                    {% if menu.check_status() %}
+                    {% if menu.status %}
                         <div class="col-sm-6 col-md-4 col-lg-3 mt-3">
                             <div class="text-center subscription-title">
                                 <div class="fw-bold" style="color: #25d92b;">Expired</div>
@@ -63,5 +63,12 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        socket.on('subscription_update', function(msg) {
+            location.reload();
+        });
+    </script>
 </body>
 {% endblock %}

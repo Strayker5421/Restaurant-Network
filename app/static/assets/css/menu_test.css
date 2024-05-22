@@ -1,0 +1,80 @@
+.menu-page {
+    position: relative;
+    width: 100%;
+    max-width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.menu-template {
+    width: 100%;
+    height: auto;
+}
+
+.menu-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20mm;
+    box-sizing: border-box;
+    column-count: 2;
+    column-gap: 20mm;
+}
+
+.dish {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    width: 100%;
+    text-align: center;
+}
+
+.dish-image {
+    width: 190px;
+    height: 140px;
+}
+
+.dish-details {
+    margin-top: 5mm;
+}
+
+body {
+    background-color: #444;
+}
+
+.modal {
+    background-color: white;
+    margin: 1em auto;
+    max-width: 256px;
+    padding: 1em;
+    text-align: center;
+}
+
+.images {
+    margin-top: 1em;
+    position: relative;
+    width: 256px;
+    height: 256px;
+}
+
+[class*="slide-"] {
+    opacity: 0.0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    transition: opacity linear 0.5s;
+}
+
+.to-one:checked ~ .images .slide-one,
+.to-two:checked ~ .images .slide-two,
+.to-three:checked ~ .images .slide-three {
+    opacity: 1.0;
+}
