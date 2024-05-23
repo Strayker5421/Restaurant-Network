@@ -1,34 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=500, initial-scale=1">
+    <title>Menu restaurant</title>
     <link rel="stylesheet" href="/static/assets/css/menu_test.css">
 </head>
-<body>
-    <div class="container">
-        <div class="modal">
-            <input type="radio" name="image-slider" class="to-one" checked>
-            <input type="radio" name="image-slider" class="to-two">
-            <input type="radio" name="image-slider" class="to-three">
-            <div class="images">
-                <img src="http://vectorlogofree.com/wp-content/uploads/2014/04/23656-apple-logo-icon-vector-icon-vector-eps.png" class="slide-one">
-                <img src="http://vignette4.wikia.nocookie.net/memoryalpha/images/0/02/Linux_icon.png/revision/latest?cb=20141003183250&path-prefix=en" class="slide-two">
-                <img src="http://vignette2.wikia.nocookie.net/apps/images/2/24/Windows-8-Logo-small.png/revision/latest?cb=20130627215459" class="slide-three">
+<body onkeydown="handleKey(event)">
+        <div class="images">
+            <img src="/static/images/menu_template.png" class="slide-one" alt="Menu Template">
+            <div class="slide-controls">
+                <button class="prev" onclick="plusSlides(-1)">&#10094;</button>
+                <button class="next" onclick="plusSlides(1)">&#10095;</button>
             </div>
         </div>
 
+    {% set sections = ["Hot Dishes", "Cold Dishes", "Desserts", "Drinks", "Appetizers", "Salad"] %}
+    {% set slide_num = 0 %}
 
-        <div class="menu-page">
-            <img src="/static/images/menu_template.png" class="menu-template" alt="Menu Template">
-            <div class="menu-content">
-                {% for dish in menu.dishes[0:3] %}
-                    <div class="dish">
-                        <img src="{{ dish.image }}" class="dish-image" alt="{{ dish.name }}">
-                        <div class="dish-details">
-                            <h2>{{ dish.name }}</h2>
-                            <p>{{ dish.ingredients }}</p>
-                            <p>{{ dish.price }}</p>
+    {% for section in sections %}
+        {% set dishes_in_section = dishes | selectattr('section', 'equalto', section) | list %}
+        {% if dishes_in_section %}
+            {% for dish in dishes_in_section %}
+                {% if loop.index0 % 6 == 0 %}
+                    {% if not loop.first %}
+                        </div>
+                    {% endif %}
+                    <div class="menu-slide {% if slideIndex == slide_num %}active{% else %}inactive{% endif %}">
+                    <div class="section">{{ section }}</div>
+                    {% set slide_num = slide_num + 1 %}
+                {% endif %}
+                <div class="dish">
+                    <img src="{{ dish.image }}" class="rectangle-{{ loop.index0 % 6 + 1 }}" alt="{{ dish.name }}">
+                    <div class="rectangle-{{ loop.index0 % 6 + 1 }}-with-data">
+                        <div class="mobile_dish_text">
+                            <div class="d-flex">
+                                <h3 class="my-auto">{{ dish.name }}</h3>
+                                <div class="lines mt-auto"></div>
+                                <p class="price_app my-auto">{{ dish.price }}$</p>
+                            </div>
+                            {{ dish.ingredients }}
                         </div>
                     </div>
-                {% endfor %}
+                </div>
+            {% endfor %}
             </div>
-        </div>
-    </div>
+        {% endif %}
+    {% endfor %}
+    <script>
+        let slideIndex = 0;
+        showSlides(slideIndex);
+
+        function plusSlides(n) {
+            showSlides(slideIndex + n);
+        }
+
+        function showSlides(n) {
+            const slides = document.querySelectorAll(".menu-slide");
+            if (n < 0) { n = 0; }
+            if (n >= slides.length) { n = slides.length - 1; }
+            slideIndex = n;
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+            }
+            slides[n].style.display = "block";
+        }
+
+        function handleKey(e) {
+            e = e || window.event;
+            if (e.keyCode == '37') {
+                plusSlides(-1);
+            }
+            else if (e.keyCode == '39') {
+                plusSlides(1);
+            }
+        }
+    </script>
 </body>
+</html>

@@ -427,10 +427,10 @@ def generate_and_save_qr_code(id, name, source):
         )
 
         if source == "menu":
-            qr.add_data(f"http://192.168.1.24:5000/menu/{id}")
+            qr.add_data(f"http://172.20.10.8:5000/menu/{id}")
             save_path = os.path.join("app", "static", "images", "qr_code", "menus")
         elif source == "restaurant":
-            qr.add_data(f"http://192.168.1.24:5000/restaurant?restaurant_name={name}")
+            qr.add_data(f"http://172.20.10.8:5000/restaurant?restaurant_name={name}")
             save_path = os.path.join(
                 "app", "static", "images", "qr_code", "restaurants"
             )
@@ -525,6 +525,7 @@ def add_dish():
         menu_id = request.form.get("DishIdForMenu")
         dish_image = request.files.get("DishItemImageURL")
         dish_ingredients = request.form.get("DishItemIngredients")
+        dishSection = request.form.get("DishSection")
         existing_menu = Menu.query.get(menu_id)
 
         if not existing_menu:
@@ -540,6 +541,7 @@ def add_dish():
             image=image_path,
             price=dish_price,
             menu_id=menu_id,
+            section=dishSection,
         )
         db.session.add(new_menu)
         db.session.commit()

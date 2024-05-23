@@ -77,6 +77,7 @@ class Dish(db.Model):
     price = db.Column(db.Float, nullable=False)
     ingredients = db.Column(db.String(500), nullable=False)
     image = db.Column(db.String(255), nullable=True)
+    section = db.Column(db.String(255), nullable=False)
     menu_id = db.Column(db.Integer, db.ForeignKey("menu.id"))
 
 

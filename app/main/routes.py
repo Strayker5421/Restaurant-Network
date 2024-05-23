@@ -61,7 +61,8 @@ def show_menus():
 @bp.route("/menu/<int:menu_id>")
 def show_menu(menu_id):
     menu = Menu.query.get(menu_id)
-    return render_template("show_menu_test.html", menu=menu)
+    dishes = menu.dishes.all()
+    return render_template("_menu_test.html", menu=menu, dishes=dishes)
 
 
 @bp.route("/menu_template")
