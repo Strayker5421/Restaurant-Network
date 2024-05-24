@@ -2,51 +2,46 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=500, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu restaurant</title>
     <link rel="stylesheet" href="/static/assets/css/menu_test.css">
 </head>
-<body onkeydown="handleKey(event)">
+<body class="hidden" onkeydown="handleKey(event)">
+    <div class="modal">
         <div class="images">
-            <img src="/static/images/menu_template.png" class="slide-one" alt="Menu Template">
-            <div class="slide-controls">
-                <button class="prev" onclick="plusSlides(-1)">&#10094;</button>
-                <button class="next" onclick="plusSlides(1)">&#10095;</button>
-            </div>
+            <img id="menuTemplateImage" src="{{ url_for('static', filename='images/menu_templates/' + menu.name + '.png') }}" class="slide-one" alt="Menu Template">
+            <div class="rectangle-container" id="selectionRectangle"></div>
         </div>
+    </div>
 
     {% set sections = ["Hot Dishes", "Cold Dishes", "Desserts", "Drinks", "Appetizers", "Salad"] %}
-    {% set slide_num = 0 %}
+    {% set slideIndex = 0 %}
 
     {% for section in sections %}
         {% set dishes_in_section = dishes | selectattr('section', 'equalto', section) | list %}
         {% if dishes_in_section %}
-            {% for dish in dishes_in_section %}
-                {% if loop.index0 % 6 == 0 %}
-                    {% if not loop.first %}
-                        </div>
-                    {% endif %}
-                    <div class="menu-slide {% if slideIndex == slide_num %}active{% else %}inactive{% endif %}">
-                    <div class="section">{{ section }}</div>
-                    {% set slide_num = slide_num + 1 %}
-                {% endif %}
-                <div class="dish">
-                    <img src="{{ dish.image }}" class="rectangle-{{ loop.index0 % 6 + 1 }}" alt="{{ dish.name }}">
-                    <div class="rectangle-{{ loop.index0 % 6 + 1 }}-with-data">
-                        <div class="mobile_dish_text">
-                            <div class="d-flex">
-                                <h3 class="my-auto">{{ dish.name }}</h3>
-                                <div class="lines mt-auto"></div>
-                                <p class="price_app my-auto">{{ dish.price }}$</p>
+            {% for i in range(0, dishes_in_section|length, 6) %}
+                <div class="menu-slide {% if slideIndex == 0 %}active{% else %}inactive{% endif %}">
+                    <div class="section" style="display: none;">{{ section }}</div>
+                    <div class="menu-row">
+                        {% for dish in dishes_in_section[i:i+6] %}
+                            <div class="dish"
+                                data-name="{{ dish.name }}"
+                                data-price="{{ dish.price }}"
+                                data-ingredients="{{ dish.ingredients }}">
+                                <img src="{{ dish.image }}" alt="{{ dish.name }}">
+                                <div class="name" style="display: none;">{{ dish.name }}</div>
+                                <div class="price" style="display: none;">{{ dish.price }}</div>
+                                <div class="ingredients" style="display: none;">{{ dish.ingredients }}</div>
                             </div>
-                            {{ dish.ingredients }}
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
+                {% set slideIndex = slideIndex + 1 %}
             {% endfor %}
-            </div>
         {% endif %}
     {% endfor %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <script>
         let slideIndex = 0;
         showSlides(slideIndex);
@@ -64,6 +59,11 @@
                 slides[i].style.display = "none";
             }
             slides[n].style.display = "block";
+
+            clearRectangles();
+            initRectangles();
+            initTextRectangles();
+            initSectionRectangles();
         }
 
         function handleKey(e) {
@@ -75,6 +75,430 @@
                 plusSlides(1);
             }
         }
+
+        let hammertime = new Hammer(document.querySelector('.images'));
+        hammertime.on('swipeleft', function() {
+            plusSlides(1);
+        });
+        hammertime.on('swiperight', function() {
+            plusSlides(-1);
+       });
+
+        function clearRectangles() {
+            let rectangles = document.querySelectorAll('.rectangle, .text-rectangle, .section-rectangle');
+            rectangles.forEach(function(rectangle) {
+                rectangle.parentNode.removeChild(rectangle);
+            });
+        }
+
+        function createRectangle(rectangleNumber, dishImage) {
+            let rectangle = document.createElement('div');
+            rectangle.className = 'rectangle rectangle-' + rectangleNumber;
+            let selectedModel = document.querySelector('.slide-one');
+            let modelWidth = selectedModel.clientWidth;
+            let modelHeight = selectedModel.clientHeight;
+            rectangle.style.position = 'absolute';
+            rectangle.style.width = modelWidth * 0.31 + 'px';
+            rectangle.style.height = modelHeight * 0.16 + 'px';
+            rectangle.style.border = '2px solid black';
+
+            let dishImg = new Image();
+            dishImg.src = dishImage;
+            dishImg.style.width = '100%';
+            dishImg.style.height = '100%';
+            rectangle.appendChild(dishImg);
+
+            let imagesContainer = document.querySelector('.images');
+            imagesContainer.appendChild(rectangle);
+
+            adjustRectanglesPosition();
+        }
+
+        function createSectionRectangle(sectionName) {
+            let rectangle = document.createElement('div');
+            rectangle.className = 'section-rectangle';
+            let selectedModel = document.querySelector('.slide-one');
+            let modelWidth = selectedModel.clientWidth;
+            let modelHeight = selectedModel.clientHeight;
+            rectangle.style.position = 'absolute';
+            rectangle.style.width = modelWidth * 0.3 + 'px';
+            rectangle.style.height = modelHeight * 0.05 + 'px';
+            rectangle.style.display = 'flex';
+            rectangle.style.justifyContent = 'center';
+            rectangle.style.alignItems = 'center';
+
+            let sectionText = document.createElement('div');
+            sectionText.className = 'section-text';
+            sectionText.innerHTML = sectionName;
+            sectionText.style.textAlign = 'center';
+
+            rectangle.appendChild(sectionText);
+
+            let imagesContainer = document.querySelector('.images');
+            imagesContainer.appendChild(rectangle);
+
+            adjustSectionRectanglePosition();
+        }
+
+        function createTextRectangle(rectangleNumber, dish) {
+            let rectangle = document.createElement('div');
+            rectangle.className = 'text-rectangle rectangle-' + rectangleNumber;
+            let selectedModel = document.querySelector('.slide-one');
+            let modelWidth = selectedModel.clientWidth;
+            let modelHeight = selectedModel.clientHeight;
+            rectangle.style.position = 'absolute';
+            rectangle.style.width = modelWidth * 0.39 + 'px';
+            rectangle.style.height = modelHeight * 0.08 + 'px';
+
+            let textData = document.createElement('div');
+            textData.className = 'text-data';
+            textData.innerHTML = `<div class="d-flex"><h3 class="my-auto">${dish.name}</h3><div class="lines mt-auto"></div><p class="my-auto">${dish.price} ₽</p></div>${dish.ingredients}`;
+            rectangle.appendChild(textData);
+
+            let imagesContainer = document.querySelector('.images');
+            imagesContainer.appendChild(rectangle);
+
+            adjustTextRectanglesPosition();
+        }
+
+        function initTextRectangles() {
+            let slides = document.querySelectorAll(".menu-slide");
+            let currentSlide = slides[slideIndex];
+            if (!currentSlide) return;
+
+            let dishesOnCurrentSlide = currentSlide.querySelectorAll(".dish");
+            dishesOnCurrentSlide.forEach(function(dish, index) {
+                if (index < 6) {
+                    createTextRectangle(index + 1, {
+                        name: dish.dataset.name.trim(),
+                        price: dish.dataset.price.trim(),
+                        ingredients: dish.dataset.ingredients.trim()
+                    });
+                }
+            });
+
+            adjustTextRectanglesPosition();
+        }
+
+        function initRectangles() {
+            let slides = document.querySelectorAll(".menu-slide");
+            let currentSlide = slides[slideIndex];
+            let dishesOnCurrentSlide = currentSlide.querySelectorAll(".dish img");
+            dishesOnCurrentSlide.forEach(function(dishImg, index) {
+                if (index < 6) {
+                    createRectangle(index + 1, dishImg.src);
+                }
+            });
+        }
+
+        function initSectionRectangles() {
+            let slides = document.querySelectorAll(".menu-slide");
+            let currentSlide = slides[slideIndex];
+            if (currentSlide) {
+                createSectionRectangle(currentSlide.querySelector('.section').innerText.trim());
+            }
+        }
+
+        function adjustRectanglesPosition() {
+            let selectionRectangle = document.getElementById('selectionRectangle');
+            let selectedModel = document.querySelector('.slide-one');
+            let modelWidth = selectedModel.clientWidth;
+            let modelHeight = selectedModel.clientHeight;
+
+            let imageRect = selectedModel.getBoundingClientRect();
+            let centerX = imageRect.left + imageRect.width / 2;
+            let centerY = imageRect.top + imageRect.height / 2;
+
+            document.querySelectorAll('.rectangle').forEach(function(rectangle) {
+                let rectangleNumber = parseInt(rectangle.className.split('-').pop());
+                let initialX, initialY;
+                switch(rectangleNumber) {
+                    case 1:
+                        initialX = centerX - modelWidth * 0.425;
+                        initialY = centerY - modelHeight * 0.295;
+                        break;
+                    case 2:
+                        initialX = centerX + modelWidth * 0.087 ;
+                        initialY = centerY - modelHeight * 0.295;
+                        break;
+                    case 3:
+                        initialX = centerX - modelWidth * 0.425;
+                        initialY = centerY - modelHeight * 0.0285;
+                        break;
+                    case 4:
+                        initialX = centerX + modelWidth * 0.087;
+                        initialY = centerY - modelHeight * 0.0285;
+                        break;
+                    case 5:
+                    initialX = centerX - modelWidth * 0.425;
+                        initialY = centerY + modelHeight * 0.239;
+                        break;
+                    case 6:
+                        initialX = centerX + modelWidth * 0.087;
+                        initialY = centerY + modelHeight * 0.239;
+                        break;
+                    default:
+                        initialX = centerX;
+                        initialY = centerY;
+                }
+
+                rectangle.style.left = initialX + 'px';
+                rectangle.style.top = initialY + 'px';
+            });
+        }
+
+        function adjustTextRectanglesPosition() {
+            let selectionRectangle = document.getElementById('selectionRectangle');
+            let selectedModel = document.querySelector('.slide-one');
+            let modelWidth = selectedModel.clientWidth;
+            let modelHeight = selectedModel.clientHeight;
+
+            let imageRect = selectedModel.getBoundingClientRect();
+            let centerX = imageRect.left + imageRect.width / 2;
+            let centerY = imageRect.top + imageRect.height / 2;
+
+            document.querySelectorAll('.text-rectangle').forEach(function(rectangle) {
+                let rectangleNumber = parseInt(rectangle.className.split('-').pop());
+                let initialX, initialY;
+                switch(rectangleNumber) {
+                    case 1:
+                        initialX = centerX - modelWidth * 0.425;
+                        initialY = centerY - modelHeight * 0.125;
+                        break;
+                    case 2:
+                        initialX = centerX + modelWidth * 0.09;
+                        initialY = centerY - modelHeight * 0.125;
+                        break;
+                    case 3:
+                        initialX = centerX - modelWidth * 0.425;
+                        initialY = centerY + modelHeight * 0.144;
+                        break;
+                    case 4:
+                        initialX = centerX + modelWidth * 0.09;
+                        initialY = centerY + modelHeight * 0.144;
+                        break;
+                    case 5:
+                        initialX = centerX - modelWidth * 0.425;
+                        initialY = centerY + modelHeight * 0.410;
+                        break;
+                    case 6:
+                        initialX = centerX + modelWidth * 0.09;
+                        initialY = centerY + modelHeight * 0.410;
+                        break;
+                    default:
+                        initialX = centerX;
+                        initialY = centerY;
+                }
+                rectangle.style.left = initialX + 'px';
+                rectangle.style.top = initialY + 'px';
+            });
+        }
+
+        function adjustSectionRectanglePosition() {
+            let selectedModel = document.querySelector('.slide-one');
+            let modelWidth = selectedModel.clientWidth;
+            let modelHeight = selectedModel.clientHeight;
+
+            let imageRect = selectedModel.getBoundingClientRect();
+            let centerX = imageRect.left + imageRect.width / 2;
+            let centerY = imageRect.top + imageRect.height / 2;
+
+            let sectionRectangle = document.querySelector('.section-rectangle');
+            sectionRectangle.style.left = (centerX - modelHeight * 0.115) + 'px';
+            sectionRectangle.style.top = (centerY - modelHeight * 0.4) + 'px';
+        }
+
+        function adjustFontSize() {
+            let windowWidth = window.innerWidth;
+            let sectionFontSize;
+            let textFontSize;
+
+            if (windowWidth < 600) {
+                sectionFontSize = '14px';
+                textFontSize = '10px';
+            } else if (windowWidth < 900) {
+                sectionFontSize = '16px';
+                textFontSize = '12px';
+            } else {
+                sectionFontSize = '20px';
+                textFontSize = '16px';
+            }
+            document.body.style.fontSize = textFontSize;
+            let sectionTextElements = document.querySelectorAll(".section-text");
+            sectionTextElements.forEach(function(element) {
+                element.style.fontSize = sectionFontSize;
+            });
+            let textElements = document.querySelectorAll(".text-data");
+            textElements.forEach(function(element) {
+                element.style.fontSize = textFontSize;
+            });
+        }
+        let originalImagesElement = document.querySelector('.images');
+
+        // Функция для временного удаления и восстановления исходного элемента
+        function toggleOriginalElementVisibility() {
+            if (originalImagesElement.style.display === 'none') {
+                originalImagesElement.style.display = 'flex'; // Восстанавливаем отображение исходного элемента
+            } else {
+                originalImagesElement.style.display = 'none'; // Временно скрываем исходный элемент
+            }
+        }
+
+        function createImagesClone() {
+            const clonedImagesElement = originalImagesElement.cloneNode(true); // Клонируем без вложенных элементов
+            clonedImagesElement.style.display = 'block'; // Устанавливаем стиль блока для клонированного элемента
+            clonedImagesElement.classList.add('images-clone'); // Добавляем класс для идентификации клонированного элемента
+            document.body.appendChild(clonedImagesElement); // Добавляем клонированный элемент в DOM для применения стилей
+            return clonedImagesElement;
+        }
+
+
+        function adjustRectanglesForPrint() {
+            const imagesClone = createImagesClone(); // Создаем клон элемента .images
+            const imagesCloneDisplayStyle = getDisplayStyle(imagesClone); // Получаем стиль display для клонированного элемента .images
+
+            if (imagesCloneDisplayStyle === 'block') {
+                console.log("PRINT");
+                const textRectangles = calculateRectangles(imagesClone);
+                console.log(textRectangles);
+                // Здесь можно выполнить другие действия, связанные с печатью
+            } else {
+                console.log("NEPRINT");
+            }
+        }
+        // Функция для обработки события перед началом печати
+        window.addEventListener('beforeprint', function() {
+            console.log("beforeprint event fired");
+            toggleOriginalElementVisibility(); // Скрываем исходный элемент перед началом печати
+            const imagesClone = createImagesClone(); // Создаем клон элемента .images
+            const imagesCloneDisplayStyle = getDisplayStyle(imagesClone); // Получаем стиль display для клонированного элемента .images
+            calculateRectangles(imagesClone);
+            window.setScale(130);
+        });
+
+        // Функция для обработки события после завершения процесса печати
+        window.addEventListener('afterprint', function() {
+            console.log("afterprint event fired");
+            toggleOriginalElementVisibility(); // Восстанавливаем отображение исходного элемента
+            const imagesClone = document.querySelector('.images-clone');
+            if (imagesClone) {
+                imagesClone.remove();
+            }
+        });
+
+
+
+        function getDisplayStyle(element) {
+            return window.getComputedStyle(element).getPropertyValue('display');
+        }
+
+        function calculateRectangles(imagesClone) {
+            let selectedModel = imagesClone.querySelector('.slide-one');
+            let modelWidth = selectedModel.clientWidth;
+            let modelHeight = selectedModel.clientHeight;
+
+            let imageRect = selectedModel.getBoundingClientRect();
+            let centerX = imageRect.left + imageRect.width / 2;
+            let centerY = imageRect.top + imageRect.height / 2;
+
+            imagesClone.querySelectorAll('.text-rectangle').forEach(function(rectangleText) {
+                let rectangleTextNumber = parseInt(rectangleText.className.split('-').pop());
+                let initialX, initialY;
+                switch(rectangleTextNumber) {
+                    case 1:
+                        initialX = centerX - modelWidth * 0.425;
+                        initialY = centerY - modelHeight * 0.12;
+                        break;
+                    case 2:
+                        initialX = centerX + modelWidth * 0.09;
+                        initialY = centerY - modelHeight * 0.12;
+                        break;
+                    case 3:
+                        initialX = centerX - modelWidth * 0.425;
+                        initialY = centerY + modelHeight * 0.145;
+                        break;
+                    case 4:
+                        initialX = centerX + modelWidth * 0.09;
+                        initialY = centerY + modelHeight * 0.145;
+                        break;
+                    case 5:
+                        initialX = centerX - modelWidth * 0.425;
+                        initialY = centerY + modelHeight * 0.405;
+                        break;
+                    case 6:
+                        initialX = centerX + modelWidth * 0.09;
+                        initialY = centerY + modelHeight * 0.405;
+                        break;
+                    default:
+                        initialX = centerX;
+                        initialY = centerY;
+                }
+
+                // Обновляем координаты существующего прямоугольника
+                rectangleText.style.left = `${initialX}px`;
+                rectangleText.style.top = `${initialY}px`;
+
+                // Добавляем информацию о прямоугольнике в массив
+            });
+
+
+            imagesClone.querySelectorAll('.rectangle').forEach(function(rectangle) {
+                let rectangleNumber = parseInt(rectangle.className.split('-').pop());
+                let initialX, initialY;
+                switch(rectangleNumber) {
+                            case 1:
+                                initialX = centerX - modelWidth * 0.425;
+                                initialY = centerY - modelHeight * 0.295;
+                                break;
+                            case 2:
+                                initialX = centerX + modelWidth * 0.09 ;
+                                initialY = centerY - modelHeight * 0.295;
+                                break;
+                            case 3:
+                                initialX = centerX - modelWidth * 0.425;
+                                initialY = centerY - modelHeight * 0.025;
+                                break;
+                            case 4:
+                                initialX = centerX + modelWidth * 0.09;
+                                initialY = centerY - modelHeight * 0.025;
+                                break;
+                            case 5:
+                            initialX = centerX - modelWidth * 0.425;
+                                initialY = centerY + modelHeight * 0.245;
+                                break;
+                            case 6:
+                                initialX = centerX + modelWidth * 0.09;
+                                initialY = centerY + modelHeight * 0.245;
+                                break;
+                            default:
+                                initialX = centerX;
+                                initialY = centerY;
+                        }
+
+                        rectangle.style.left = initialX + 'px';
+                        rectangle.style.top = initialY + 'px';
+            });
+
+                    let sectionRectangle = imagesClone.querySelector('.section-rectangle');
+                    sectionRectangle.style.left = (centerX - modelHeight * 0.115) + 'px';
+                    sectionRectangle.style.top = (centerY - modelHeight * 0.4) + 'px';
+
+        }
+
+        window.onload = function() {
+            adjustRectanglesPosition();
+            adjustTextRectanglesPosition();
+            adjustSectionRectanglePosition();
+            adjustFontSize();
+
+            window.addEventListener('resize', function() {
+                adjustRectanglesPosition();
+                adjustTextRectanglesPosition();
+                adjustSectionRectanglePosition();
+                adjustFontSize();
+            });
+            document.body.classList.remove('hidden');
+        };
     </script>
 </body>
 </html>

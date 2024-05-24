@@ -427,10 +427,10 @@ def generate_and_save_qr_code(id, name, source):
         )
 
         if source == "menu":
-            qr.add_data(f"http://172.20.10.8:5000/menu/{id}")
+            qr.add_data(f"http://192.168.1.24:5000/menu/{id}")
             save_path = os.path.join("app", "static", "images", "qr_code", "menus")
         elif source == "restaurant":
-            qr.add_data(f"http://172.20.10.8:5000/restaurant?restaurant_name={name}")
+            qr.add_data(f"http://192.168.1.24:5000/restaurant?restaurant_name={name}")
             save_path = os.path.join(
                 "app", "static", "images", "qr_code", "restaurants"
             )
@@ -704,11 +704,20 @@ def change_image_item():
 @bp.route("/add_menu", methods=["POST"])
 def add_menu():
     try:
-        data = request.json
+        data = (
+            request.form
+        )  # Изменено на request.form для обработки multipart/form-data
 
         menu_name = data.get("MenuName")
         subscription_length = data.get("SubscriptionLength")
         restaurant_id = data.get("RestaurantIdForMenu")
+
+        if "menuTemplateImage" not in request.files:
+            return jsonify({"error": "No file part"}), 400
+
+        file = request.files["menuTemplateImage"]
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
 
         existing_restaurant = Restaurant.query.get(restaurant_id)
         if not existing_restaurant:
@@ -734,6 +743,14 @@ def add_menu():
         db.session.commit()
 
         qr_image_path = generate_and_save_qr_code(new_menu.id, new_menu.name, "menu")
+
+        try:
+            file_path = os.path.join(
+                "app", "static", "images", "menu_templates", f"{new_menu.name}.jpg"
+            )
+            file.save(file_path)
+        except Exception as file_save_error:
+            return jsonify({"error": "Failed to save file"}), 500
 
         if qr_image_path:
             return jsonify(

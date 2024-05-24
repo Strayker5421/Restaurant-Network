@@ -12,12 +12,6 @@
     height: auto;
 }
 
-.center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 .menu-content {
     position: absolute;
     top: 0;
@@ -39,6 +33,7 @@
     page-break-inside: avoid;
     width: 100%;
     text-align: center;
+    display: none;
 }
 
 .dish-image {
@@ -68,77 +63,26 @@ body {
     position: relative;
 }
 
-.slide-controls {
-    position: absolute;
-    bottom: 50%;
-    transform: translateY(50%);
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20px;
-    box-sizing: border-box;
-    z-index: 1;
-}
-
-.images button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    color: white;
-    font-size: 24px;
-}
-
-.images button:hover {
-    background-color: rgba(255, 255, 255, 0.5);
-}
-
-.prev, .next {
-    pointer-events: auto;
-}
-
 .images img {
     max-width: 100%;
     height: auto;
-    max-height: 90vh;
-    object-fit: contain;
+    max-height: 100vh;
 }
 
 .slide-one {
-    width: 100%;
-    flex: 0 0 100%;
-}
-
-.menu-title {
-    position: absolute;
-    left: 832px;
-    top: 93px;
-    width: 196px;
-    height: 54px;
-    font-size: 24px;
-    text-align: center;
-    line-height: 54px;
+    margin: auto;
+    max-width: 100%;
+    height: auto;
 }
 
 .lines {
-  flex-grow: 0.8;
-  height: 2px;
-  margin-right: 8px;
-  margin-left: 10px;
-  background-image: url(https://technext.github.io/pato/images/icons/pattern3.png);
-  background-repeat: repeat;
-  margin-bottom: 0.3rem;
-}
-
-.dish_title {
-  font-size: 20px;
-}
-
-.price_app {
-  font-size: 20px;
-  font-weight: 400;
+    flex-grow: 0.8;
+    height: 2px;
+    margin-right: 8px;
+    margin-left: 10px;
+    background-image: url(https://technext.github.io/pato/images/icons/pattern3.png);
+    background-repeat: repeat;
+    margin-bottom: 0.3rem;
 }
 
 .d-flex {
@@ -154,268 +98,34 @@ body {
     margin-bottom: auto;
 }
 
-.section {
-    position: absolute;
-    left: 657px;
-    top: 104px;
-    width: 200px;
-    height: 27px;
-    font-size: 20px;
-    text-align: center;
-    line-height: 27px;
-    padding-bottom: 0.5px;
-    margin-top: -2px;
+.hidden {
+    visibility: hidden;
 }
 
-.rectangle-1-with-data,
-.rectangle-2-with-data,
-.rectangle-3-with-data,
-.rectangle-4-with-data,
-.rectangle-5-with-data,
-.rectangle-6-with-data {
-    position: absolute;
-    width: 218px;
-    height: 60px;
-    padding: 5px;
-    line-height: 1.2;
-    text-align: left;
-    margin-top: 0;
-}
-
-.rectangle-1-with-data { left: 516px; top: 310px; }
-.rectangle-2-with-data { left: 810px; top: 310px; }
-.rectangle-3-with-data { left: 516px; top: 525px; }
-.rectangle-4-with-data { left: 810px; top: 525px; }
-.rectangle-5-with-data { left: 516px; top: 747px; }
-.rectangle-6-with-data { left: 810px; top: 747px; }
-
-.rectangle-1,
-.rectangle-2,
-.rectangle-3,
-.rectangle-4,
-.rectangle-5,
-.rectangle-6 {
-    position: absolute;
-    width: 179px;
-    height: 130px;
-    border: 2px solid black;
-}
-
-.rectangle-1 { left: 520px; top: 180px; }
-.rectangle-2 { left: 813px; top: 180px; }
-.rectangle-3 { left: 520px; top: 393px; }
-.rectangle-4 { left: 813px; top: 393px; }
-.rectangle-5 { left: 520px; top: 610px; }
-.rectangle-6 { left: 813px; top: 610px; }
-
-@media screen and (max-width:726px) {
-    .menu-page {
-        position: relative;
-        width: 100%;
-        max-width: 210mm;
-        height: 297mm;
-        overflow: hidden;
-        margin-bottom: 20px;
-    }
-
-    .menu-template {
-        width: 100%;
-        height: auto;
-    }
-
-    .center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .menu-content {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-around;
-        align-items: center;
-        padding: 20mm;
-        box-sizing: border-box;
-        column-count: 2;
-        column-gap: 20mm;
-    }
-
-    .dish {
-        break-inside: avoid;
-        page-break-inside: avoid;
-        width: 100%;
-        text-align: center;
-    }
-
-    .dish-image {
-        width: 190px;
-        height: 140px;
-        position: relative;
-    }
-
-    .dish-details {
-        margin-top: 5mm;
-    }
-
-    body {
-        background-color: #444;
-    }
-
-    .modal {
-        position: relative;
-        max-width: 100%;
-        overflow: hidden;
-    }
-
+@media print {
     .images {
-        display: flex;
+        display: block;
         transition: transform 0.5s ease-in-out;
         align-items: flex-end;
         position: relative;
     }
 
-    .slide-controls {
-        position: absolute;
-        bottom: 50%;
-        transform: translateY(50%);
-        left: 0;
-        right: 0;
-        display: flex;
-        justify-content: space-between;
-        padding: 0 20px;
-        box-sizing: border-box;
-        z-index: 1;
-    }
-
-    .images button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        width: 40px;
-        height: 40px;
-        color: white;
-        font-size: 24px;
-    }
-
-    .images button:hover {
-        background-color: rgba(255, 255, 255, 0.5);
-    }
-
-    .prev, .next {
-        pointer-events: auto;
-    }
-
-    .images img {
+    .slide-one {
+        display: block;
+        margin: auto;
         max-width: 100%;
         height: auto;
-        max-height: 90vh;
-        object-fit: contain;
     }
+}
 
-    .slide-one {
-        width: 100%;
-        flex: 0 0 100%;
+@media print {
+    @page {
+        margin: 0;
     }
+}
 
-    .menu-title {
-        position: absolute;
-        left: 832px;
-        top: 93px;
-        width: 196px;
-        height: 54px;
-        font-size: 24px;
-        text-align: center;
-        line-height: 54px;
+@media print {
+    body {
+        transform: scale(1);
     }
-
-    .lines {
-      flex-grow: 0.8;
-      height: 2px;
-      margin-right: 8px;
-      margin-left: 10px;
-      background-image: url(https://technext.github.io/pato/images/icons/pattern3.png);
-      background-repeat: repeat;
-      margin-bottom: 0.3rem;
-    }
-
-    .price_app {
-      font-size: 12px;
-      font-weight: 400;
-    }
-
-    .mobile_dish_text {
-        font-size: 12px;
-    }
-
-    .d-flex {
-        display: flex
-    }
-
-    .mt-auto {
-        margin-top: auto
-    }
-
-    .my-auto {
-        margin-top: auto;
-        margin-bottom: auto;
-    }
-
-    .section {
-        position: absolute;
-        left: 153px;
-        top: 87px;
-        width: 200px;
-        height: 27px;
-        font-size: 20px;
-        text-align: center;
-        line-height: 27px;
-        padding-bottom: 0.5px;
-        margin-top: -2px;
-    }
-
-    .rectangle-1-with-data,
-    .rectangle-2-with-data,
-    .rectangle-3-with-data,
-    .rectangle-4-with-data,
-    .rectangle-5-with-data,
-    .rectangle-6-with-data {
-        position: absolute;
-        width: 195px;
-        height: 50px;
-        padding: 5px;
-        line-height: 1.2;
-        text-align: left;
-        margin-top: 0;
-    }
-
-    .rectangle-1-with-data { left: 45px; top: 269px; }
-    .rectangle-2-with-data { left: 295px; top: 269px; }
-    .rectangle-3-with-data { left: 45px; top: 455px; }
-    .rectangle-4-with-data { left: 295px; top: 455px; }
-    .rectangle-5-with-data { left: 45px; top: 640px; }
-    .rectangle-6-with-data { left: 295px; top: 640px; }
-
-    .rectangle-1,
-    .rectangle-2,
-    .rectangle-3,
-    .rectangle-4,
-    .rectangle-5,
-    .rectangle-6 {
-        position: absolute;
-        width: 150px;
-        height: 110px;
-        border: 2px solid black;
-    }
-
-    .rectangle-1 { left: 50px; top: 155px; }
-    .rectangle-2 { left: 300px; top: 155px; }
-    .rectangle-3 { left: 50px; top: 338px; }
-    .rectangle-4 { left: 300px; top: 338px; }
-    .rectangle-5 { left: 50px; top: 520px; }
-    .rectangle-6 { left: 300px; top: 520px; }
 }
