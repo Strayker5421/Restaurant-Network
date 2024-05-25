@@ -957,6 +957,34 @@ def change_status_menu():
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 
+@bp.route("/change_menu_image", methods=["POST"])
+def change_menu_image():
+    try:
+        MenuIdToModify = request.form.get("MenuIdToModifyTemplate")
+        NewMenuImage = request.files["NewMenuImage"]
+        menu = Menu.query.get(MenuIdToModify)
+        if not menu:
+            error_message = f"Menu with ID {MenuIdToModify} not found"
+            return jsonify({"error": error_message}), 404
+
+        # Путь к текущему изображению меню
+        current_image_path = os.path.join(
+            "app", "static", "images", "menu_templates", f"{menu.name}.png"
+        )
+
+        # Удаляем текущее изображение, если оно существует
+        if os.path.exists(current_image_path):
+            os.remove(current_image_path)
+
+        # Сохраняем новое изображение в папке menu_templates с тем же именем, что и у текущего меню
+        NewMenuImage.save(current_image_path)
+
+        return jsonify({"message": "Menu image changed successfully"})
+    except Exception as e:
+        error_message = f"Error changing menu image: {str(e)}"
+        return jsonify({"error": error_message}), 500
+
+
 @bp.route("/fetch_restaurants/<int:user_id>", methods=["GET"])
 def fetch_restaurants(user_id):
     try:

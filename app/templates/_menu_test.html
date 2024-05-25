@@ -451,7 +451,7 @@
                                 initialY = centerY - modelHeight * 0.295;
                                 break;
                             case 2:
-                                initialX = centerX + modelWidth * 0.09 ;
+                                initialX = centerX + modelWidth * 0.09;
                                 initialY = centerY - modelHeight * 0.295;
                                 break;
                             case 3:
@@ -485,11 +485,12 @@
 
         }
 
-        window.onload = function() {
+        document.addEventListener("DOMContentLoaded", function() {
+            // Ваш JavaScript-код для выполнения после загрузки DOM
+            adjustFontSize();
             adjustRectanglesPosition();
             adjustTextRectanglesPosition();
             adjustSectionRectanglePosition();
-            adjustFontSize();
 
             window.addEventListener('resize', function() {
                 adjustRectanglesPosition();
@@ -497,8 +498,10 @@
                 adjustSectionRectanglePosition();
                 adjustFontSize();
             });
+
             document.body.classList.remove('hidden');
-        };
+        });
+
     </script>
 </body>
 </html>

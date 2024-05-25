@@ -283,6 +283,7 @@
             <button onclick="openSubTab('viewMenu')">View menu</button>
             <button onclick="openSubTab('searchMenu')">Search menu</button>
             <button onclick="openSubTab('changeStatusMenu')">Change status menu</button>
+            <button onclick="openSubTab('changeTemplatesMenu')">Change template menu</button>
             <button onclick="openSubTab('deleteMenu')">Delete menu</button>
             <button onclick="openSubTab('changeMenuName')">Change menu name</button>
         </div>
@@ -353,7 +354,7 @@
                         <option value="1 day">1 day</option>
                     </select>
 
-                    <label for="menuTemplateImage">Change Menu Templates:</label>
+                    <label for="menuTemplateImage">Menu Template:</label>
                     <input type="file" id="menuTemplateImage" accept="image/*">
 
                     <div id="qrCodeContainerMenus"></div>
@@ -373,6 +374,19 @@
                 <input type="submit" value="Change Menu Name">
             </form>
         </div>
+
+        <div id="changeTemplatesMenu" class="sub-tab-content">
+            <form id="changeTemplatesMenuForm" enctype="multipart/form-data">
+                <label for="MenuIdToModifyTemplate">Menu ID:</label>
+                <input type="number" id="MenuIdToModifyTemplate" placeholder="Enter menu ID" required min="1">
+
+                <label for="NewMenuImage">New Menu Image:</label> <!-- Добавлено поле для выбора изображения -->
+                <input type="file" id="NewMenuImage" accept="image/*" required>
+
+                <input type="submit" value="Change Menu Image">
+            </form>
+        </div>
+
     </div>
 
         <div id="users" class="tab-content">
@@ -1029,6 +1043,42 @@ function changeStatusMenu(MenuId, newStatus) {
             iconClass: 'toast-error-rectangle'
         });
     });
+}
+
+
+document.getElementById('changeTemplatesMenuForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const MenuIdToModifyTemplate = document.getElementById('MenuIdToModifyTemplate').value;
+    const NewMenuImage = document.getElementById('NewMenuImage').files[0];
+
+    ChangeMenuImage(MenuIdToModifyTemplate, NewMenuImage);
+});
+
+function ChangeMenuImage(MenuIdToModifyTemplate, NewMenuImage) {
+    const formData = new FormData();
+    formData.append('MenuIdToModifyTemplate', MenuIdToModifyTemplate);
+    formData.append('NewMenuImage', NewMenuImage);
+
+    axios.post('/change_menu_image', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('Menu image changed successfully', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error('Error changing menu image:', error);
+            toastr.error('Error changing menu image', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
 }
 
 document.getElementById('deleteMenuForm').addEventListener('submit', function (event) {
