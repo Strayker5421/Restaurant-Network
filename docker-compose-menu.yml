@@ -1,0 +1,20 @@
+services:
+  app:
+    image: ir0h/resos_menu
+    ports:
+      - 0.0.0.0:8082:8082
+    environment:
+      DATABASE_URL: postgresql://postgres:20453843@resos_menu_postgres:5432/resos_menu_db
+    depends_on:
+      - resos_menu_postgres
+
+  resos_menu_postgres:
+    image: postgres
+    volumes:
+      - resos-menu-postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 20453843
+      POSTGRES_DB: resos_menu_db
+
+volumes:
+  resos-menu-postgres-data:

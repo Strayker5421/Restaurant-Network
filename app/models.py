@@ -1,8 +1,13 @@
-from app import db, login, socketio
+import docker.errors
+from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import ARRAY
 from datetime import datetime
+from docker import DockerClient
+from sqlalchemy import create_engine, text
+import os
+import subprocess, pytz
 
 
 class User(UserMixin, db.Model):
@@ -40,18 +45,18 @@ class Menu(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     status = db.Column(db.Boolean, default=False)
-    expiration_date = db.Column(db.DateTime, index=True, default=datetime.now)
-    restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"))
-    dishes = db.relationship(
-        "Dish", backref="menu", lazy="dynamic", cascade="all, delete-orphan"
+    expiration_date = db.Column(
+        db.DateTime(timezone=True),
+        index=True,
+        default=datetime.now(pytz.timezone("Europe/Moscow")),
     )
+    restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"))
 
     def check_subscription(self):
-        new_status = datetime.now() < self.expiration_date
+        new_status = datetime.now(pytz.timezone("Europe/Moscow")) < self.expiration_date
         if new_status != self.status:
             self.status = new_status
             db.session.commit()
-
             restaurant = self.restaurant
             active_menus = Menu.query.filter_by(
                 restaurant_id=restaurant.id, status=True
@@ -61,24 +66,49 @@ class Menu(db.Model):
             else:
                 restaurant.status = True
             db.session.commit()
-        socketio.emit(
-            "subscription_update", {"menu_id": self.id, "status": self.status}
+
+            if self.status:
+                self.start_container(
+                    self.name.replace(" ", "-").lower(),
+                    self.restaurant.name.split(" ")[0].lower(),
+                )
+            else:
+                self.stop_container(
+                    self.name.replace(" ", "-").lower(),
+                    self.restaurant.name.split(" ")[0].lower(),
+                )
+
+    @staticmethod
+    def start_container(menu_name, restaurant_name):
+        subprocess.run(
+            [
+                "docker-compose",
+                "-f",
+                "docker-compose-menu.yml",
+                "--project-name",
+                f"menu-{restaurant_name}-{menu_name}",
+                "up",
+                "-d",
+            ]
+        )
+
+    @staticmethod
+    def stop_container(menu_name, restaurant_name):
+        subprocess.run(
+            [
+                "docker-compose",
+                "-f",
+                "docker-compose-menu.yml",
+                "--project-name",
+                f"menu-{restaurant_name}-{menu_name}",
+                "down",
+            ]
         )
 
     @staticmethod
     def get_menu(menu_name):
         menu = Menu.query.filter_by(name=menu_name).first()
         return menu
-
-
-class Dish(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    ingredients = db.Column(db.String(500), nullable=False)
-    image = db.Column(db.String(255), nullable=True)
-    section = db.Column(db.String(255), nullable=False)
-    menu_id = db.Column(db.Integer, db.ForeignKey("menu.id"))
 
 
 @login.user_loader

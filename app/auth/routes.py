@@ -27,6 +27,20 @@ def login():
     return render_template("auth/login.html", title="Sign In", form=form)
 
 
+@bp.route("/login/admin", methods=["GET", "POST"])
+def login_admin():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash("Invalid username or password")
+            return redirect(url_for("auth.login", next=request.args.get("next")))
+        if user.role:
+            next_page = request.args.get("next")
+            return redirect(next_page)
+    return render_template("auth/login.html", title="Sign In", form=form)
+
+
 @bp.route("/logout")
 def logout():
     logout_user()

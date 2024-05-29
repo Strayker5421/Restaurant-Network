@@ -3,4 +3,5 @@ source venv/bin/activate
 flask db init
 flask db migrate
 flask db upgrade
-exec gunicorn -b :5001 run:app
+chmod 666 /var/run/docker.sock
+exec gunicorn -b :8081 run:app

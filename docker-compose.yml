@@ -2,9 +2,11 @@ services:
   app:
     image: ir0h/resos
     ports:
-      - 0.0.0.0:5001:5001
+      - 0.0.0.0:8081:8081
     environment:
       DATABASE_URL: postgresql://postgres:20453843@resos_postgres:5432/resos_db
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - resos_postgres
 

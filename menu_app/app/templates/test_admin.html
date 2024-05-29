@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/assets/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+    <title>Administrator Interface</title>
+</head>
+<body>
+
+    <div class="tabs">
+        <button onclick="openTab('menu')">Menu</button>
+        <button onclick="openTab('dish')">Dish</button>
+    </div>
+
+    <div id="dish" class="tab-content">
+        <div class="sub-tabs" id="dishSubTabs">
+            <button onclick="openSubTab('AddDish')">Add dish</button>
+            <button onclick="openSubTab('viewDish')">View dishes</button>
+            <button onclick="openSubTab('searchDish')">Search dish</button>
+            <button onclick="openSubTab('ChangePriceItem')">Change price dish</button>
+            <button onclick="openSubTab('ChangeIngredients')">Change ingredients</button>
+            <button onclick="openSubTab('ChangeNameItem')">Change name dish</button>
+            <button onclick="openSubTab('ChangeImage')">Change image dish</button>
+            <button onclick="openSubTab('DeleteDish')">Delete dish</button>
+        </div>
+        <div id="viewDish" class="sub-table-content">
+            <form id="viewDishForm" oninput="loadDishes()">
+                <input type="hidden" id="MenuIdToView" value="{{ menu.id }}" required>
+                <div id="viewDishContainer"></div>
+            </form>
+        </div>
+
+        <div id="searchDish" class="sub-table-content">
+            <form id="searchDishForm">
+                <input type="hidden" id="MenuIdToSearch" value="{{ menu.id }}">
+                <input type="text" id="searchQueryDish" placeholder="Search dish parameters" oninput="searchDishes()" required>
+                <input type="submit" value="Search" style="display: none;">
+            </form>
+
+            <div id="searchResultsDish"></div>
+        </div>
+
+        <div id="AddDish" class="sub-tab-content">
+            <form id="addDishItemForm">
+
+                <input type="hidden" id="MenuIdForDish" value="{{ menu.id }}">
+
+                <label for="DishItemName">Dish name:</label>
+                <input type="text" id="DishItemName" placeholder="Enter dish name" required>
+
+                <label for="DishItemIngredients">Dish ingredients:</label>
+                <input type="text" id="DishItemIngredients" placeholder="Enter dish ingredients" required>
+
+                <label for="DishItemPrice">Dish price:</label>
+                <input type="number" step="0.01" id="DishItemPrice" placeholder="Enter dish price" required min="0">
+
+                <label for="DishSection">Dish Section:</label>
+                <select id="DishSection" required>
+                    <option value="Hot Dishes">Hot Dishes</option>
+                    <option value="Cold Dishes">Cold Dishes</option>
+                    <option value="Desserts">Desserts</option>
+                    <option value="Drinks">Drinks</option>
+                    <option value="Appetizers">Appetizers</option>
+                    <option value="Salad">Salad</option>
+                </select>
+
+                <label for="DishItemImageURL">Image URLs:</label>
+                <input type="file" id="DishItemImageURL" name="Dish_images">
+
+                <input type="submit" value="Add dish">
+            </form>
+        </div>
+
+        <div id="ChangePriceItem" class="sub-tab-content">
+            <form id="ChangePriceItemForm">
+
+                <input type="hidden" id="MenuIdToModifyPrice" value="{{ menu.id }}">
+
+                <label for="DishIDToModPrice">Dish ID:</label>
+                <input type="number" id="DishIDToModPrice" placeholder="Enter dish ID" required min="1">
+
+                <label for="NewDishPrice">Dish price:</label>
+                <input type="number" step="0.01" id="NewDishPrice" placeholder="Enter dish price" required min="0">
+
+                <input type="submit" value="Change price dish">
+            </form>
+        </div>
+
+        <div id="ChangeIngredients" class="sub-tab-content">
+            <form id="ChangeIngredientsForm">
+
+                <input type="hidden" id="MenuIdToModifyIngredients" value="{{ menu.id }}">
+
+                <label for="DishIDToModIngredients">Dish ID:</label>
+                <input type="number" id="DishIDToModIngredients" placeholder="Enter dish ID" required min="1">
+
+                <label for="NewDishIngredients">Dish ingredients:</label>
+                <input type="text" id="NewDishIngredients" placeholder="Enter dish ingredients" required min="0">
+
+                <input type="submit" value="Change ingredients dish">
+            </form>
+        </div>
+
+        <div id="ChangeNameItem" class="sub-tab-content">
+            <form id="ChangeNameItemForm" method="post" enctype="multipart/form-data">
+
+                <input type="hidden" id="MenuIdToModifyName" value="{{ menu.id }}">
+
+                <label for="DishIdToModName">Dish item ID:</label>
+                <input type="number" id="DishIdToModName" placeholder="Enter dish ID" required min="1">
+
+                <label for="NameToModify">Name:</label>
+                <input type="text" id="NameToModify" placeholder="Enter dish name" required>
+
+                <input type="submit" value="Change name dish">
+            </form>
+        </div>
+
+        <div id="ChangeImage" class="sub-tab-content">
+            <form id="ChangeImageForm">
+
+                <input type="hidden" id="MenuIdToModifyImage" value="{{ menu.id }}">
+
+                <label for="DishIdToModImage">Dish ID:</label>
+                <input type="number" id="DishIdToModImage" placeholder="Enter dish ID" required min="1">
+
+                <label for="DishImageChangeURL">Image URLs:</label>
+                <input type="file" id="DishImageChangeURL" name="Dish_images">
+
+                <input type="submit" value="Change image dish">
+            </form>
+        </div>
+
+        <div id="DeleteDish" class="sub-tab-content">
+            <form id="DeleteDishForm">
+                <input type="hidden" id="MenuIdToDelete" value="{{ menu.id }}">
+                <label for="DishIdToDelete">Dish ID to delete:</label>
+                <input type="number" id="DishIdToDelete" placeholder="Enter dish ID" required min="1">
+                <button type="submit">Delete dish</button>
+            </form>
+
+            <form id="deleteAllDishIdForm" onsubmit="confirmDeleteAllDishes(); return false;">
+                <button type="submit">Delete all dishes</button>
+            </form>
+        </div>
+
+
+    </div>
+
+    <div id="menu" class="tab-content">
+        <div class="sub-tabs" id="menuSubTabs">
+            <button onclick="openSubTab('changeTemplatesMenu')">Change template menu</button>
+            <button onclick="openSubTab('changeMenuName')">Change menu name</button>
+        </div>
+
+        <div id="changeMenuName" class="sub-tab-content">
+            <form id="changeMenuNameForm">
+                <input type="hidden" id="MenuIdToModify" value="{{ menu.id }}">
+
+                <label for="NewMenuName">New Menu Name:</label>
+                <input type="text" id="NewMenuName" placeholder="Enter new menu name" required>
+
+                <input type="submit" value="Change Menu Name">
+            </form>
+        </div>
+
+
+
+        <div id="changeTemplatesMenu" class="sub-tab-content">
+            <form id="changeTemplatesMenuForm" enctype="multipart/form-data">
+                <input type="hidden" id="MenuIdToModifyTemplate" value="{{ menu.id }}">
+
+                <label for="NewMenuImage">New Menu Image:</label>
+                <input type="file" id="NewMenuImage" accept="image/*" required>
+
+                <input type="submit" value="Change Menu Image">
+            </form>
+        </div>
+    </div>
+
+<script>
+
+const commonOptions = {
+    positionClass: 'toast-top',
+    progressBar: true,
+    timeOut: 3000,
+    tapToDismiss: false,
+    newestOnTop: false,
+    showDuration: 300,
+    hideDuration: 1000,
+    titleClass: 'toast-title',
+    messageClass: 'toast-message'
+};
+
+function openSubTab(subTabName) {
+    var subTab = document.getElementById(subTabName);
+    var subTabs = document.getElementsByClassName("sub-tab-content");
+    var subTables = document.getElementsByClassName("sub-table-content");
+
+    for (var i = 0; i < subTabs.length; i++) {
+        if (subTabs[i] !== subTab) {
+            subTabs[i].style.display = "none";
+        }
+    }
+
+     for (var i = 0; i < subTables.length; i++) {
+        if (subTables[i] !== subTab) {
+            subTables[i].style.display = "none";
+        }
+    }
+    if (subTabName === 'viewDish') {
+        loadDishes();
+    }
+
+    subTab.style.display = subTab.style.display === "block" ? "none" : "block";
+}
+
+function openTab(tabName) {
+    var tab = document.getElementById(tabName);
+    var tabs = document.getElementsByClassName("tab-content");
+    var subTables = document.getElementsByClassName("sub-table-content");
+
+    for (var i = 0; i < tabs.length; i++) {
+        if (tabs[i] !== tab) {
+            tabs[i].style.display = "none";
+        }
+    }
+
+      for (var i = 0; i < subTables.length; i++) {
+        if (subTables[i] !== tab) {
+            subTables[i].style.display = "none";
+        }
+    }
+
+    tab.style.display = window.getComputedStyle(tab).display === "block" ? "none" : "block";
+}
+
+document.getElementById('addDishItemForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const DishItemName = document.getElementById('DishItemName').value;
+    const DishItemPrice = document.getElementById('DishItemPrice').value;
+    const DishIdForMenu = document.getElementById('MenuIdForDish').value;
+    const DishItemIngredients = document.getElementById('DishItemIngredients').value;
+    const DishSection = document.getElementById('DishSection').value;
+    const DishItemImageURL = document.getElementById('DishItemImageURL').files[0];
+
+    const formData = new FormData();
+    formData.append('DishItemName', DishItemName);
+    formData.append('DishItemPrice', DishItemPrice);
+    formData.append('DishIdForMenu', DishIdForMenu);
+    formData.append('DishItemIngredients', DishItemIngredients);
+    formData.append('DishItemImageURL', DishItemImageURL);
+    formData.append('DishSection', DishSection);
+
+    addDish(formData);
+});
+
+function addDish(formData) {
+    axios.post('/add_dish', formData)
+        .then(response => {
+            console.log(response.data);
+            toastr.success('Dish successfully added', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error('Error adding dish:', error);
+            toastr.error('Error adding dish', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+document.getElementById('DeleteDishForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const DishIdToDelete = document.getElementById('DishIdToDelete').value;
+    DeleteDish(DishIdToDelete);
+});
+
+function DeleteDish(DishIdToDelete) {
+    axios.post('/delete_dish', {
+        DishIdToDelete: DishIdToDelete
+    })
+    .then(response => {
+        console.log('Response:', response.data);
+        toastr.success('Dish successfully deleted', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error deleting dish:', error.response.data);
+        toastr.error('Error deleting dish', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+function confirmDeleteAllDishes() {
+    var confirmDelete = confirm("Are you sure you want to delete all dishes?");
+    if (confirmDelete) {
+        deleteAllDishes();
+    }
+}
+
+function deleteAllDishes() {
+    fetch('/delete_all_dishes', {
+        method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        toastr.success('All dishes deleted successfully', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function confirmDeleteAllDishesForMenu() {
+    var menuId = document.getElementById('MenuIdToDeleteDishes').value;
+    if (!menuId) {
+        toastr.error('Menu ID is required', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+        return;
+    }
+    var confirmDelete = confirm("Are you sure you want to delete all dishes for this menu?");
+    if (confirmDelete) {
+        deleteAllDishesForMenu(menuId);
+    }
+}
+
+function deleteAllDishesForMenu(menuId) {
+    axios.post('/delete_all_dishes_for_menu', { menu_id: menuId })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All dishes for the menu successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting all dishes for the menu', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+document.getElementById('ChangePriceItem').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const DishIDToModPrice = document.getElementById('DishIDToModPrice').value;
+    const NewDishPrice = document.getElementById('NewDishPrice').value;
+    ChangePriceItem(DishIDToModPrice, NewDishPrice);
+});
+
+function ChangePriceItem(DishIDToModPrice, NewDishPrice) {
+    axios.post('/change_price_item', {
+        DishIDToModPrice: DishIDToModPrice,
+        NewDishPrice: NewDishPrice
+    })
+    .then(response => {
+        console.log("Response:", response.data);
+        toastr.success('Dish price change successfully', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error dish price change:', error.response.data);
+        toastr.error('Error dish price change', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+document.getElementById('ChangeNameItemForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const DishIdToModName = document.getElementById('DishIdToModName').value;
+    const NameToModify = document.getElementById('NameToModify').value;
+    ChangeNameItem(DishIdToModName, NameToModify);
+});
+
+function ChangeNameItem(DishIdToModName, NameToModify) {
+    axios.post('/change_name_item', {
+        DishIdToModName: DishIdToModName,
+        NameToModify: NameToModify
+    })
+    .then(response => {
+        console.log("Response:", response.data);
+        toastr.success('Dish name change successfully', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error dish name change:', error.response.data);
+        toastr.error('Error dish name change', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+
+document.getElementById('ChangeIngredientsForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const DishIDToModIngredients = document.getElementById('DishIDToModIngredients').value;
+    const NewDishIngredients = document.getElementById('NewDishIngredients').value;
+    ChangeIngredients(DishIDToModIngredients, NewDishIngredients);
+});
+
+function ChangeIngredients(DishIDToModIngredients, NewDishIngredients) {
+    axios.post('/change_ingredients', {
+        DishIDToModIngredients: DishIDToModIngredients,
+        NewDishIngredients: NewDishIngredients
+    })
+    .then(response => {
+        console.log("Response:", response.data);
+        toastr.success('Indigrients change successfully', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error indigrients change:', error.response.data);
+        toastr.error('Error indigrients change', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+document.getElementById('ChangeImageForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const DishIdToModImage = document.getElementById('DishIdToModImage').value;
+    const DishImageChangeURL = document.getElementById('DishImageChangeURL').files[0];
+
+    const formData = new FormData();
+    formData.append('DishIdToModImage', DishIdToModImage);
+    formData.append('DishImageChangeURL', DishImageChangeURL);
+
+    ChangeImageItem(formData);
+});
+
+function ChangeImageItem(formData) {
+    axios.post('/change_image_item', formData)
+        .then(response => {
+            console.log(response.data);
+            toastr.success('Restaurant successfully added', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error('Error adding restaurant:', error);
+            toastr.error('Error adding restaurant', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+
+document.getElementById('changeTemplatesMenuForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const MenuIdToModifyTemplate = document.getElementById('MenuIdToModifyTemplate').value;
+    const NewMenuImage = document.getElementById('NewMenuImage').files[0];
+
+    ChangeMenuImage(MenuIdToModifyTemplate, NewMenuImage);
+});
+
+function ChangeMenuImage(MenuIdToModifyTemplate, NewMenuImage) {
+    const formData = new FormData();
+    formData.append('MenuIdToModifyTemplate', MenuIdToModifyTemplate);
+    formData.append('NewMenuImage', NewMenuImage);
+
+    axios.post('/change_menu_image', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('Menu image changed successfully', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error('Error changing menu image:', error);
+            toastr.error('Error changing menu image', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+document.getElementById('changeMenuNameForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const MenuId = document.getElementById('MenuIdToModify').value;
+    const NewMenuName = document.getElementById('NewMenuName').value;
+    console.log(MenuId)
+    changeMenuName(MenuId, NewMenuName);
+});
+
+
+function changeMenuName(MenuId, NewMenuName) {
+    axios.post('/change_menu_name', {
+        MenuId: MenuId,
+        NewMenuName: NewMenuName
+    })
+    .then(response => {
+        console.log(response.data);
+        toastr.success('Menu name successfully changed', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error changing menu name:', error);
+        toastr.error('Error changing menu name', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+function searchDishes() {
+    const searchQuery = document.getElementById('searchQueryDish').value;
+    const menuId = document.getElementById('MenuIdToSearch').value;
+
+    axios.get(`/search_dishes?menu_id=${menuId}&search_query=${searchQuery}`)
+        .then(response => {
+            const dishes = response.data;
+            const searchResultsContainer = document.getElementById('searchResultsDish');
+            const table = document.createElement('table');
+            table.border = '1';
+
+            const columns = ['id', 'name', 'price', 'ingredients', 'image'];
+
+            const headerRow = document.createElement('tr');
+            columns.forEach(column => {
+                const th = document.createElement('th');
+                th.textContent = column;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            dishes.forEach(dish => {
+                const row = document.createElement('tr');
+                columns.forEach(column => {
+                    const td = document.createElement('td');
+
+                    if (column === 'image') {
+                        const img = document.createElement('img');
+                        img.src = dish[column];
+                        img.style.maxWidth = '300px'
+                        img.style.maxHeight = '300px'
+                        td.appendChild(img);
+                    } else {
+                        td.textContent = dish[column];
+                    }
+                    row.appendChild(td);
+                });
+                table.appendChild(row);
+            });
+
+            searchResultsContainer.innerHTML = '';
+            searchResultsContainer.appendChild(table);
+        })
+        .catch(error => {
+            console.error('Error searching dishes:', error);
+        });
+}
+function loadDishes() {
+    const menuId = document.getElementById('MenuIdToView').value;
+
+    axios.get(`/fetch_dishes/${menuId}`)
+        .then(response => {
+            const dishes = response.data;
+            const viewDishContainer = document.getElementById('viewDishContainer');
+
+            const table = document.createElement('table');
+            table.border = '1';
+
+            const columns = ['id', 'name', 'price', 'ingredients', 'image'];
+
+            const headerRow = document.createElement('tr');
+            columns.forEach(column => {
+                const th = document.createElement('th');
+                th.textContent = column;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            dishes.forEach(dish => {
+                const row = document.createElement('tr');
+                columns.forEach(column => {
+                    const td = document.createElement('td');
+                    if (column === 'image') {
+                        const img = document.createElement('img');
+                        img.src = dish[column];
+                        img.style.maxWidth = '300px'
+                        img.style.maxHeight = '300px'
+                        td.appendChild(img);
+                    } else {
+                        td.textContent = dish[column];
+                    }
+                    row.appendChild(td);
+                });
+                table.appendChild(row);
+            });
+
+            viewDishContainer.innerHTML = '';
+            viewDishContainer.appendChild(table);
+        })
+        .catch(error => {
+            console.error('Error fetching dishes:', error);
+        });
+}
+    </script>
+</body>
+</html>

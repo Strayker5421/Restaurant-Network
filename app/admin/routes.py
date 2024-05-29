@@ -1,7 +1,7 @@
 from flask import jsonify, request, render_template, url_for
 from flask_login import current_user, login_required
 from app import db
-from app.models import User, Menu, Restaurant, Dish
+from app.models import User, Menu, Restaurant
 from app.admin import bp
 from sqlalchemy import or_, cast, and_
 from sqlalchemy.types import String
@@ -19,14 +19,6 @@ def administrator():
 def delete_all_data():
     try:
         db.session.query(User).delete()
-
-        dishes = Dish.query.all()
-        for dish in dishes:
-            if dish.image:
-                full_image_path = os.path.join("app", dish.image[1:])
-                if os.path.exists(full_image_path):
-                    os.remove(full_image_path)
-            db.session.delete(dish)
 
         menus = Menu.query.all()
         for menu in menus:
@@ -61,105 +53,6 @@ def delete_all_data():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-
-
-@bp.route("/delete_dish", methods=["POST"])
-def delete_dish():
-    try:
-        data = request.json
-        dish_id = data.get("DishIdToDelete")
-
-        dish = Dish.query.get(dish_id)
-
-        if not dish:
-            return jsonify({"error": "Dish not found"}), 404
-
-        if dish.image:
-            full_image_path = os.path.join("app", dish.image[1:])
-            if os.path.exists(full_image_path):
-                os.remove(full_image_path)
-
-        db.session.delete(dish)
-        db.session.commit()
-
-        return jsonify({"message": "Dish deleted successfully"})
-
-    except Exception as e:
-        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
-
-
-@bp.route("/delete_all_dishes", methods=["POST"])
-def delete_all_dishes():
-    try:
-        dishes = Dish.query.all()
-        for dish in dishes:
-            if dish.image:
-                full_image_path = os.path.join("app", dish.image[1:])
-                if os.path.exists(full_image_path):
-                    os.remove(full_image_path)
-
-            db.session.delete(dish)
-        db.session.commit()
-
-        return jsonify({"message": "All dish deleted successfully"})
-    except Exception as e:
-        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
-
-
-@bp.route("/delete_all_dishes_for_menu", methods=["POST"])
-def delete_all_dishes_for_menu():
-    try:
-        data = request.json
-        menu_id = data.get("menu_id")
-
-        if not menu_id:
-            return jsonify({"error": "Menu ID is required"}), 400
-
-        dishes = Dish.query.filter_by(menu_id=menu_id).all()
-        for dish in dishes:
-            if dish.image:
-                full_image_path = os.path.join("app", dish.image[1:])
-                if os.path.exists(full_image_path):
-                    os.remove(full_image_path)
-
-            db.session.delete(dish)
-        db.session.commit()
-
-        return jsonify({"message": "All dishes for the menu deleted successfully"})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
-
-
-@bp.route("/delete_all_dishes_for_user", methods=["POST"])
-def delete_all_dishes_for_user():
-    try:
-        data = request.json
-        user_id = data.get("user_id")
-
-        if not user_id:
-            return jsonify({"error": "User ID is required"}), 400
-
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-
-        for restaurant in user.restaurants:
-            for menu in restaurant.menus:
-                dishes = Dish.query.filter_by(menu_id=menu.id).all()
-                for dish in dishes:
-                    if dish.image:
-                        full_image_path = os.path.join("app", dish.image[1:])
-                        if os.path.exists(full_image_path):
-                            os.remove(full_image_path)
-
-                    db.session.delete(dish)
-        db.session.commit()
-
-        return jsonify({"message": "All dishes for the user deleted successfully"})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
 
 @bp.route("/change_status_restaurant", methods=["POST"])
@@ -219,14 +112,6 @@ def delete_restaurant():
                 if os.path.exists(full_image_path_menu):
                     os.remove(full_image_path_menu)
 
-                related_dishes = Dish.query.filter_by(menu_id=menu.id).all()
-                for dish in related_dishes:
-                    if dish.image:
-                        full_image_path_dish = os.path.join("app", dish.image[1:])
-                        if os.path.exists(full_image_path_dish):
-                            os.remove(full_image_path_dish)
-                    db.session.delete(dish)
-
                 db.session.delete(menu)
 
             db.session.delete(restaurant_to_delete)
@@ -274,14 +159,6 @@ def delete_all_restaurants():
                 if os.path.exists(full_image_path_menu):
                     os.remove(full_image_path_menu)
 
-                related_dishes = Dish.query.filter_by(menu_id=menu.id).all()
-                for dish in related_dishes:
-                    if dish.image:
-                        full_image_path_dish = os.path.join("app", dish.image[1:])
-                        if os.path.exists(full_image_path_dish):
-                            os.remove(full_image_path_dish)
-                    db.session.delete(dish)
-
                 db.session.delete(menu)
 
             db.session.delete(restaurant_delete)
@@ -327,14 +204,6 @@ def delete_all_restaurants_user(user_id):
                 full_image_path_menu = os.path.join(qr_code_dir_menu, menu_qr_filename)
                 if os.path.exists(full_image_path_menu):
                     os.remove(full_image_path_menu)
-
-                related_dishes = Dish.query.filter_by(menu_id=menu.id).all()
-                for dish in related_dishes:
-                    if dish.image:
-                        full_image_path_dish = os.path.join("app", dish.image[1:])
-                        if os.path.exists(full_image_path_dish):
-                            os.remove(full_image_path_dish)
-                    db.session.delete(dish)
 
                 db.session.delete(menu)
 
@@ -417,7 +286,7 @@ def change_restaurant_image():
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 
-def generate_and_save_qr_code(id, name, source):
+def generate_and_save_qr_code(id, name, source, restaurant_name=None):
     try:
         qr = qrcode.QRCode(
             version=1,
@@ -427,10 +296,10 @@ def generate_and_save_qr_code(id, name, source):
         )
 
         if source == "menu":
-            qr.add_data(f"http://192.168.1.24:5000/menu/{id}")
+            qr.add_data(f"http://{restaurant_name}.{name}.172.20.10.8.xip.io")
             save_path = os.path.join("app", "static", "images", "qr_code", "menus")
         elif source == "restaurant":
-            qr.add_data(f"http://192.168.1.24:5000/restaurant?restaurant_name={name}")
+            qr.add_data(f"http://{name}.172.20.10.8.xip.io")
             save_path = os.path.join(
                 "app", "static", "images", "qr_code", "restaurants"
             )
@@ -517,59 +386,6 @@ def save_image(images, path):
     return images_paths
 
 
-@bp.route("/add_dish", methods=["POST"])
-def add_dish():
-    try:
-        dish_name = request.form.get("DishItemName")
-        dish_price = request.form.get("DishItemPrice")
-        menu_id = request.form.get("DishIdForMenu")
-        dish_image = request.files.get("DishItemImageURL")
-        dish_ingredients = request.form.get("DishItemIngredients")
-        dishSection = request.form.get("DishSection")
-        existing_menu = Menu.query.get(menu_id)
-
-        if not existing_menu:
-            error_message = "Menu not found"
-
-            return jsonify({"error": error_message}), 404
-
-        image_path = save_image(dish_image, "dishes/")[0]
-
-        new_menu = Dish(
-            name=dish_name,
-            ingredients=dish_ingredients,
-            image=image_path,
-            price=dish_price,
-            menu_id=menu_id,
-            section=dishSection,
-        )
-        db.session.add(new_menu)
-        db.session.commit()
-
-        return jsonify({"message": "Dish added successfully"})
-    except Exception as e:
-        error_message = f"Internal Server Error: {str(e)}"
-
-        return jsonify({"error": error_message}), 500
-
-
-@bp.route("/change_price_item", methods=["POST"])
-def change_price_item():
-    data = request.json
-    dish_id = data.get("DishIDToModPrice")
-    new_price = data.get("NewDishPrice")
-
-    dish = Dish.query.get(dish_id)
-
-    if dish:
-        dish.price = new_price
-        db.session.commit()
-
-        return jsonify({"message": "Dish price modified successfully"}), 200
-
-    return jsonify({"error": "Dish not found"}), 404
-
-
 @bp.route("/add_user", methods=["POST"])
 def add_user():
     data = request.json
@@ -645,62 +461,6 @@ def delete_user():
         return jsonify({"error": str(e)}), 500
 
 
-@bp.route("/change_name_item", methods=["POST"])
-def change_name_item():
-    data = request.json
-    dish_id = data.get("DishIdToModName")
-    new_name = data.get("NameToModify")
-
-    dish = Dish.query.get(dish_id)
-
-    if dish:
-        dish.name = new_name
-        db.session.commit()
-
-        return jsonify({"message": "Dish name modified successfully"}), 200
-
-    return jsonify({"error": "Dish not found"}), 404
-
-
-@bp.route("/change_ingredients", methods=["POST"])
-def change_ingredients():
-    data = request.json
-    dish_id = data.get("DishIDToModIngredients")
-    new_ingredients = data.get("NewDishIngredients")
-
-    dish = Dish.query.get(dish_id)
-
-    if dish:
-        dish.ingredients = new_ingredients
-        db.session.commit()
-
-        return jsonify({"message": "Ingredients modified successfully"}), 200
-
-    return jsonify({"error": "Dish not found"}), 404
-
-
-@bp.route("/change_image_item", methods=["POST"])
-def change_image_item():
-    dish_id = request.form.get("DishIdToModImage")
-    new_image = request.files.get("DishImageChangeURL")
-
-    dish = Dish.query.get(dish_id)
-
-    if dish and new_image:
-        new_image_path = save_image(new_image, "dishes/")[0]
-        old_image_path = dish.image
-        old_image_path = f"app{old_image_path}"
-        if os.path.isfile(old_image_path):
-            os.remove(old_image_path)
-
-        dish.image = new_image_path
-        db.session.commit()
-
-        return jsonify({"message": "Dish image modified successfully"}), 200
-
-    return jsonify({"error": "Dish not found or new image not provided"}), 404
-
-
 @bp.route("/add_menu", methods=["POST"])
 def add_menu():
     try:
@@ -742,11 +502,13 @@ def add_menu():
         db.session.add(new_menu)
         db.session.commit()
 
-        qr_image_path = generate_and_save_qr_code(new_menu.id, new_menu.name, "menu")
+        qr_image_path = generate_and_save_qr_code(
+            new_menu.id, new_menu.name, "menu", existing_restaurant.name
+        )
 
         try:
             file_path = os.path.join(
-                "app", "static", "images", "menu_templates", f"{new_menu.name}.jpg"
+                "app", "static", "images", "menu_templates", f"{new_menu.name}.png"
             )
             file.save(file_path)
         except Exception as file_save_error:
@@ -768,26 +530,6 @@ def add_menu():
         return jsonify({"error": error_message}), 500
 
 
-@bp.route("/change_menu_name", methods=["POST"])
-def change_menu_name():
-    try:
-        data = request.json
-        menu_id = data.get("MenuId")
-        new_name = data.get("NewMenuName")
-
-        menu = Menu.query.get(menu_id)
-        if not menu:
-            return jsonify({"error": f"Menu with id {menu_id} not found"}), 404
-
-        menu.name = new_name
-        db.session.commit()
-
-        return jsonify({"message": "Menu name changed successfully"})
-
-    except Exception as e:
-        return jsonify({"error": "An unexpected error occurred"}), 500
-
-
 @bp.route("/delete_menu", methods=["POST"])
 def delete_menu():
     try:
@@ -798,15 +540,6 @@ def delete_menu():
 
         if not menu:
             return jsonify({"error": "Menu not found"}), 404
-
-        related_dishes = Dish.query.filter_by(menu_id=menu.id).all()
-
-        for dish in related_dishes:
-            if dish.image:
-                full_image_path = os.path.join("app", dish.image[1:])
-                if os.path.exists(full_image_path):
-                    os.remove(full_image_path)
-            db.session.delete(dish)
 
         qr_code_dir_menu = os.path.join("app", "static", "images", "qr_code", "menus")
         menu_qr_filename = f"{menu.name}_qr_code.png"
@@ -830,15 +563,6 @@ def delete_all_menu():
         menus = Menu.query.all()
 
         for menu in menus:
-            related_dishes = Dish.query.filter_by(menu_id=menu.id).all()
-
-            for dish in related_dishes:
-                if dish.image:
-                    full_image_path = os.path.join("app", dish.image[1:])
-                    if os.path.exists(full_image_path):
-                        os.remove(full_image_path)
-                db.session.delete(dish)
-
             qr_code_dir_menu = os.path.join(
                 "app", "static", "images", "qr_code", "menus"
             )
@@ -866,14 +590,6 @@ def delete_all_menu_for_restaurant():
         menus = Menu.query.filter_by(restaurant_id=restaurant_id).all()
 
         for menu in menus:
-            related_dishes = Dish.query.filter_by(menu_id=menu.id).all()
-            for dish in related_dishes:
-                if dish.image:
-                    full_image_path = os.path.join("app", dish.image[1:])
-                    if os.path.exists(full_image_path):
-                        os.remove(full_image_path)
-                db.session.delete(dish)
-
             qr_code_dir_menu = os.path.join(
                 "app", "static", "images", "qr_code", "menus"
             )
@@ -907,14 +623,6 @@ def delete_all_menu_for_user():
         for restaurant in restaurants:
             menus = Menu.query.filter_by(restaurant_id=restaurant.id).all()
             for menu in menus:
-                related_dishes = Dish.query.filter_by(menu_id=menu.id).all()
-                for dish in related_dishes:
-                    if dish.image:
-                        full_image_path = os.path.join("app", dish.image[1:])
-                        if os.path.exists(full_image_path):
-                            os.remove(full_image_path)
-                    db.session.delete(dish)
-
                 qr_code_dir_menu = os.path.join(
                     "app", "static", "images", "qr_code", "menus"
                 )
@@ -955,34 +663,6 @@ def change_status_menu():
 
     except Exception as e:
         return jsonify({"error": "An unexpected error occurred"}), 500
-
-
-@bp.route("/change_menu_image", methods=["POST"])
-def change_menu_image():
-    try:
-        MenuIdToModify = request.form.get("MenuIdToModifyTemplate")
-        NewMenuImage = request.files["NewMenuImage"]
-        menu = Menu.query.get(MenuIdToModify)
-        if not menu:
-            error_message = f"Menu with ID {MenuIdToModify} not found"
-            return jsonify({"error": error_message}), 404
-
-        # Путь к текущему изображению меню
-        current_image_path = os.path.join(
-            "app", "static", "images", "menu_templates", f"{menu.name}.png"
-        )
-
-        # Удаляем текущее изображение, если оно существует
-        if os.path.exists(current_image_path):
-            os.remove(current_image_path)
-
-        # Сохраняем новое изображение в папке menu_templates с тем же именем, что и у текущего меню
-        NewMenuImage.save(current_image_path)
-
-        return jsonify({"message": "Menu image changed successfully"})
-    except Exception as e:
-        error_message = f"Error changing menu image: {str(e)}"
-        return jsonify({"error": error_message}), 500
 
 
 @bp.route("/fetch_restaurants/<int:user_id>", methods=["GET"])
@@ -1088,33 +768,6 @@ def search_menus():
         return jsonify({"error": str(e)})
 
 
-def search_dishes_by_query(search_query, menu_id=None):
-    try:
-        query = Dish.query
-
-        if menu_id:
-            menu = Menu.query.get(menu_id)
-            if not menu:
-                return []
-            query = query.filter(Dish.menu_id == menu_id)
-
-        if search_query.isdigit():
-            query = query.filter(
-                or_(Dish.id == int(search_query), Dish.price == float(search_query))
-            )
-        else:
-            query = query.filter(
-                or_(
-                    Dish.name.ilike(f"%{search_query}%"),
-                    Dish.ingredients.ilike(f"%{search_query}%"),
-                )
-            )
-
-        return query.order_by(Dish.id).all()
-    except Exception as e:
-        return []
-
-
 def search_menus_by_query(search_query, restaurant_id):
     try:
         query = Menu.query
@@ -1138,50 +791,3 @@ def search_menus_by_query(search_query, restaurant_id):
 
     except Exception as e:
         return []
-
-
-@bp.route("/search_dishes")
-def search_dishes():
-    try:
-        search_query = request.args.get("search_query", "")
-        menu_id = request.args.get("menu_id", None)
-
-        dishes = search_dishes_by_query(search_query, menu_id)
-        dish_data = [
-            {
-                "id": dish.id,
-                "name": dish.name,
-                "price": dish.price,
-                "ingredients": dish.ingredients,
-                "image": dish.image,
-            }
-            for dish in dishes
-        ]
-
-        return dish_data
-
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-
-@bp.route("/fetch_dishes/<int:menu_id>", methods=["GET"])
-def fetch_dishes(menu_id):
-    try:
-        menu = Menu.query.get(menu_id)
-        if not menu:
-            return []
-
-        dishes = menu.dishes.all()
-        dish_data = [
-            {
-                "id": dish.id,
-                "name": dish.name,
-                "price": dish.price,
-                "ingredients": dish.ingredients,
-                "image": dish.image,
-            }
-            for dish in dishes
-        ]
-        return dish_data
-    except Exception as e:
-        return {"error": str(e)}

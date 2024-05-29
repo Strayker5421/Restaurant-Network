@@ -14,6 +14,7 @@ from app import db
 from app.models import User, Menu, Restaurant
 from app.main import bp
 from datetime import timedelta, datetime
+import pytz
 
 
 @bp.route("/", methods=["GET", "POST"])
@@ -56,13 +57,6 @@ def show_menus():
     if restaurant is None:
         abort(404, description="Menu not found")
     return render_template("show_menus.html", restaurant=restaurant)
-
-
-@bp.route("/menu/<int:menu_id>")
-def show_menu(menu_id):
-    menu = Menu.query.get(menu_id)
-    dishes = menu.dishes.all()
-    return render_template("_menu_test.html", menu=menu, dishes=dishes)
 
 
 @bp.route("/menu_template")
@@ -108,7 +102,9 @@ def extend(restaurant_id, menu_id, duration):
 def renew(restaurant_id, menu_id, duration):
     restaurant = Restaurant.query.get(restaurant_id)
     menu = Menu.query.get(menu_id)
-    menu.expiration_date = datetime.now() + timedelta(minutes=duration)
+    moscow_tz = pytz.timezone("Europe/Moscow")
+    current_time_moscow = datetime.now().astimezone(moscow_tz)
+    menu.expiration_date = current_time_moscow + timedelta(minutes=duration)
     db.session.commit()
     flash("Your subscription renewed!")
     return redirect(url_for("main.menus_list", restaurant_id=restaurant.id))

@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu restaurant</title>
-    <link rel="stylesheet" href="/static/assets/css/menu_test.css">
+    <link rel="stylesheet" href="/static/assets/css/single_menu.css">
 </head>
-<body class="hidden" onkeydown="handleKey(event)">
+<body class="hidden">
     <div class="modal">
         <div class="images">
-            <img id="menuTemplateImage" src="{{ url_for('static', filename='images/menu_templates/' + menu.name + '.png') }}" class="slide-one" alt="Menu Template">
+            <img id="menuTemplateImage" src="{{ url_for('static', filename='images/menu_templates/' + menu_name + '.png') }}" class="slide-one" alt="Menu Template">
             <div class="rectangle-container" id="selectionRectangle"></div>
         </div>
     </div>
@@ -43,6 +43,8 @@
     {% endfor %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <script>
+        window.onload = function() {
+        document.body.onkeydown = handleKey;
         let slideIndex = 0;
         showSlides(slideIndex);
 
@@ -64,6 +66,7 @@
             initRectangles();
             initTextRectangles();
             initSectionRectangles();
+            adjustFontSize();
         }
 
         function handleKey(e) {
@@ -485,7 +488,7 @@
 
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
+
             // Ваш JavaScript-код для выполнения после загрузки DOM
             adjustFontSize();
             adjustRectanglesPosition();
@@ -500,7 +503,7 @@
             });
 
             document.body.classList.remove('hidden');
-        });
+        };
 
     </script>
 </body>

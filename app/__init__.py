@@ -4,7 +4,6 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from config import Config
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask_socketio import SocketIO
 
 
 db = SQLAlchemy()
@@ -13,7 +12,6 @@ login = LoginManager()
 login.login_view = "auth.login"
 login.login_message = "Please log in to access this page."
 scheduler = BackgroundScheduler(daemon=True)
-socketio = SocketIO()
 
 
 def create_app(config_class=Config):
@@ -23,7 +21,6 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     login.init_app(app)
-    socketio.init_app(app)
 
     from app.auth import bp as auth_bp
 
