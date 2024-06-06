@@ -4,4 +4,4 @@ flask db init
 flask db migrate
 flask db upgrade
 chmod 666 /var/run/docker.sock
-exec gunicorn -b :8081 run:app
+exec gunicorn -b :80 run:app

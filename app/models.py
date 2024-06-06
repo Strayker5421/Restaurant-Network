@@ -51,6 +51,7 @@ class Menu(db.Model):
         default=datetime.now(pytz.timezone("Europe/Moscow")),
     )
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"))
+    PORT = 8000
 
     def check_subscription(self):
         new_status = datetime.now(pytz.timezone("Europe/Moscow")) < self.expiration_date
@@ -68,9 +69,11 @@ class Menu(db.Model):
             db.session.commit()
 
             if self.status:
+                Menu.PORT += 1
                 self.start_container(
                     self.name.replace(" ", "-").lower(),
                     self.restaurant.name.split(" ")[0].lower(),
+                    self.PORT,
                 )
             else:
                 self.stop_container(
@@ -79,7 +82,8 @@ class Menu(db.Model):
                 )
 
     @staticmethod
-    def start_container(menu_name, restaurant_name):
+    def start_container(menu_name, restaurant_name, port=PORT):
+        os.environ["APP_PORT"] = str(port)
         subprocess.run(
             [
                 "docker-compose",

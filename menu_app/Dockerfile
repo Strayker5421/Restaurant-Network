@@ -8,8 +8,11 @@ COPY requirements.txt requirements.txt
 RUN python -m venv venv
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app app
-COPY run.py config.py bootmenu.sh ./
+COPY ./menu_app/app app
+COPY ./menu_app/run.py ./run.py
+COPY ./menu_app/config.py ./config.py
+COPY ./menu_app/bootmenu.sh ./bootmenu.sh
+
 
 RUN chmod +x bootmenu.sh
 ENV FLASK_APP run.py
@@ -17,5 +20,5 @@ RUN chown -R appuser:appuser ./
 
 USER appuser
 
-EXPOSE 8082
+EXPOSE 80
 ENTRYPOINT ["./bootmenu.sh"]

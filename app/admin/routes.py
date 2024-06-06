@@ -296,10 +296,12 @@ def generate_and_save_qr_code(id, name, source, restaurant_name=None):
         )
 
         if source == "menu":
-            qr.add_data(f"http://{restaurant_name}.{name}.172.20.10.8.xip.io")
+            qr.add_data(
+                f"http://{restaurant_name.split(' ')[0].lower()}.{name.split(' ')[0].lower()}?ip=172.20.10.8:80"
+            )
             save_path = os.path.join("app", "static", "images", "qr_code", "menus")
         elif source == "restaurant":
-            qr.add_data(f"http://{name}.172.20.10.8.xip.io")
+            qr.add_data(f"http://{name.split(' ')[0].lower()}.172.20.10.8:80")
             save_path = os.path.join(
                 "app", "static", "images", "qr_code", "restaurants"
             )

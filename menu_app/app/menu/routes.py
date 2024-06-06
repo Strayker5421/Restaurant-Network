@@ -10,7 +10,7 @@ from docker import DockerClient
 from docker.errors import NotFound
 
 
-@bp.route("/<restaurant_name>/menu/<menu_name>", methods=["GET", "POST"])
+@bp.route("/menu/<menu_name>", methods=["GET", "POST"])
 def show_menu(menu_name):
     menu_name = menu_name.replace(" ", "-").lower()
     dishes = Dish.query.all()
@@ -19,9 +19,7 @@ def show_menu(menu_name):
 
 @bp.route("/menu/<menu_name>/admin", methods=["POST", "GET"])
 def show_menu_admin(menu_name):
-    return redirect(
-        f"http://0.0.0.0:8081/login/admin?next=http://0.0.0.0:8082/menu/{menu_name}/admin"
-    )
+    return render_template("test_admin.html")
 
 
 @bp.route("/delete_dish", methods=["POST"])
@@ -72,28 +70,20 @@ def add_dish():
     try:
         dish_name = request.form.get("DishItemName")
         dish_price = request.form.get("DishItemPrice")
-        menu_id = request.form.get("DishIdForMenu")
         dish_image = request.files.get("DishItemImageURL")
         dish_ingredients = request.form.get("DishItemIngredients")
         dishSection = request.form.get("DishSection")
-        existing_menu = Menu.query.get(menu_id)
-
-        if not existing_menu:
-            error_message = "Menu not found"
-
-            return jsonify({"error": error_message}), 404
 
         image_path = save_image(dish_image, "dishes/")[0]
 
-        new_menu = Dish(
+        new_dish = Dish(
             name=dish_name,
             ingredients=dish_ingredients,
             image=image_path,
             price=dish_price,
-            menu_id=menu_id,
             section=dishSection,
         )
-        db.session.add(new_menu)
+        db.session.add(new_dish)
         db.session.commit()
 
         return jsonify({"message": "Dish added successfully"})
@@ -176,39 +166,9 @@ def change_image_item():
     return jsonify({"error": "Dish not found or new image not provided"}), 404
 
 
-@bp.route("/search_dishes")
-def search_dishes():
-    try:
-        search_query = request.args.get("search_query", "")
-        menu_id = request.args.get("menu_id", None)
-
-        dishes = search_dishes_by_query(search_query, menu_id)
-        dish_data = [
-            {
-                "id": dish.id,
-                "name": dish.name,
-                "price": dish.price,
-                "ingredients": dish.ingredients,
-                "image": dish.image,
-            }
-            for dish in dishes
-        ]
-
-        return dish_data
-
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-
-def search_dishes_by_query(search_query, menu_id=None):
+def search_dishes_by_query(search_query):
     try:
         query = Dish.query
-
-        if menu_id:
-            menu = Menu.query.get(menu_id)
-            if not menu:
-                return []
-            query = query.filter(Dish.menu_id == menu_id)
 
         if search_query.isdigit():
             query = query.filter(
@@ -227,14 +187,33 @@ def search_dishes_by_query(search_query, menu_id=None):
         return []
 
 
-@bp.route("/fetch_dishes/<int:menu_id>", methods=["GET"])
-def fetch_dishes(menu_id):
+@bp.route("/search_dishes")
+def search_dishes():
     try:
-        menu = Menu.query.get(menu_id)
-        if not menu:
-            return []
+        search_query = request.args.get("search_query", "")
 
-        dishes = menu.dishes.all()
+        dishes = search_dishes_by_query(search_query)
+        dish_data = [
+            {
+                "id": dish.id,
+                "name": dish.name,
+                "price": dish.price,
+                "ingredients": dish.ingredients,
+                "image": dish.image,
+            }
+            for dish in dishes
+        ]
+
+        return dish_data
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
+@bp.route("/fetch_dishes", methods=["GET"])
+def fetch_dishes():
+    try:
+        dishes = Dish.all()
         dish_data = [
             {
                 "id": dish.id,
@@ -248,64 +227,6 @@ def fetch_dishes(menu_id):
         return dish_data
     except Exception as e:
         return {"error": str(e)}
-
-
-import logging
-
-
-@bp.route("/change_menu_name", methods=["POST"])
-def change_menu_name():
-    try:
-        data = request.json
-        menu_id = data.get("MenuId")
-        new_name = data.get("NewMenuName")
-
-        logging.info(f"Changing menu name. Menu ID: {menu_id}, New Name: {new_name}")
-
-        menu = Menu.query.get(menu_id)
-        if not menu:
-            logging.error(f"Menu with ID {menu_id} not found")
-            return jsonify({"error": f"Menu with id {menu_id} not found"}), 404
-
-        menu.name = new_name
-        db.session.commit()
-
-        logging.info("Menu name changed successfully")
-
-        return jsonify({"message": "Menu name changed successfully"})
-
-    except Exception as e:
-        logging.exception("An unexpected error occurred")
-        return jsonify({"error": "An unexpected error occurred"}), 500
-
-
-@bp.route("/change_menu_image", methods=["POST"])
-def change_menu_image():
-    try:
-        MenuIdToModify = request.form.get("MenuIdToModifyTemplate")
-        NewMenuImage = request.files["NewMenuImage"]
-
-        menu = Menu.query.get(MenuIdToModify)
-        if not menu:
-            error_message = f"Menu with ID {MenuIdToModify} not found"
-            return jsonify({"error": error_message}), 404
-
-        # Путь к текущему изображению меню
-        current_image_path = os.path.join(
-            "app", "static", "images", "menu_templates", f"{menu.name}.jpg"
-        )
-
-        # Удаляем текущее изображение, если оно существует
-        if os.path.exists(current_image_path):
-            os.remove(current_image_path)
-
-        # Сохраняем новое изображение в папке menu_templates с тем же именем, что и у текущего меню
-        NewMenuImage.save(current_image_path)
-
-        return jsonify({"message": "Menu image changed successfully"})
-    except Exception as e:
-        error_message = f"Error changing menu image: {str(e)}"
-        return jsonify({"error": error_message}), 500
 
 
 def save_image(images, path):

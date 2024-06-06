@@ -2,7 +2,7 @@ services:
   app:
     image: ir0h/resos
     ports:
-      - 0.0.0.0:8081:8081
+      - 0.0.0.0:10000:80
     environment:
       DATABASE_URL: postgresql://postgres:20453843@resos_postgres:5432/resos_db
     volumes:
@@ -18,6 +18,8 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
+    networks:
+      - frontnet
 
   resos_postgres:
     image: postgres
@@ -29,3 +31,7 @@ services:
 
 volumes:
   resos-postgres-data:
+
+networks:
+  frontnet:
+    external: true

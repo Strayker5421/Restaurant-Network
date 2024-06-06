@@ -26,5 +26,5 @@ RUN chown -R appuser:appuser ./
 
 USER root
 
-EXPOSE 8081
+EXPOSE 80
 ENTRYPOINT ["./boot.sh"]

@@ -30,14 +30,12 @@
         </div>
         <div id="viewDish" class="sub-table-content">
             <form id="viewDishForm" oninput="loadDishes()">
-                <input type="hidden" id="MenuIdToView" value="{{ menu.id }}" required>
                 <div id="viewDishContainer"></div>
             </form>
         </div>
 
         <div id="searchDish" class="sub-table-content">
             <form id="searchDishForm">
-                <input type="hidden" id="MenuIdToSearch" value="{{ menu.id }}">
                 <input type="text" id="searchQueryDish" placeholder="Search dish parameters" oninput="searchDishes()" required>
                 <input type="submit" value="Search" style="display: none;">
             </form>
@@ -47,8 +45,6 @@
 
         <div id="AddDish" class="sub-tab-content">
             <form id="addDishItemForm">
-
-                <input type="hidden" id="MenuIdForDish" value="{{ menu.id }}">
 
                 <label for="DishItemName">Dish name:</label>
                 <input type="text" id="DishItemName" placeholder="Enter dish name" required>
@@ -79,8 +75,6 @@
         <div id="ChangePriceItem" class="sub-tab-content">
             <form id="ChangePriceItemForm">
 
-                <input type="hidden" id="MenuIdToModifyPrice" value="{{ menu.id }}">
-
                 <label for="DishIDToModPrice">Dish ID:</label>
                 <input type="number" id="DishIDToModPrice" placeholder="Enter dish ID" required min="1">
 
@@ -93,8 +87,6 @@
 
         <div id="ChangeIngredients" class="sub-tab-content">
             <form id="ChangeIngredientsForm">
-
-                <input type="hidden" id="MenuIdToModifyIngredients" value="{{ menu.id }}">
 
                 <label for="DishIDToModIngredients">Dish ID:</label>
                 <input type="number" id="DishIDToModIngredients" placeholder="Enter dish ID" required min="1">
@@ -109,8 +101,6 @@
         <div id="ChangeNameItem" class="sub-tab-content">
             <form id="ChangeNameItemForm" method="post" enctype="multipart/form-data">
 
-                <input type="hidden" id="MenuIdToModifyName" value="{{ menu.id }}">
-
                 <label for="DishIdToModName">Dish item ID:</label>
                 <input type="number" id="DishIdToModName" placeholder="Enter dish ID" required min="1">
 
@@ -124,8 +114,6 @@
         <div id="ChangeImage" class="sub-tab-content">
             <form id="ChangeImageForm">
 
-                <input type="hidden" id="MenuIdToModifyImage" value="{{ menu.id }}">
-
                 <label for="DishIdToModImage">Dish ID:</label>
                 <input type="number" id="DishIdToModImage" placeholder="Enter dish ID" required min="1">
 
@@ -138,7 +126,6 @@
 
         <div id="DeleteDish" class="sub-tab-content">
             <form id="DeleteDishForm">
-                <input type="hidden" id="MenuIdToDelete" value="{{ menu.id }}">
                 <label for="DishIdToDelete">Dish ID to delete:</label>
                 <input type="number" id="DishIdToDelete" placeholder="Enter dish ID" required min="1">
                 <button type="submit">Delete dish</button>
@@ -155,25 +142,11 @@
     <div id="menu" class="tab-content">
         <div class="sub-tabs" id="menuSubTabs">
             <button onclick="openSubTab('changeTemplatesMenu')">Change template menu</button>
-            <button onclick="openSubTab('changeMenuName')">Change menu name</button>
         </div>
-
-        <div id="changeMenuName" class="sub-tab-content">
-            <form id="changeMenuNameForm">
-                <input type="hidden" id="MenuIdToModify" value="{{ menu.id }}">
-
-                <label for="NewMenuName">New Menu Name:</label>
-                <input type="text" id="NewMenuName" placeholder="Enter new menu name" required>
-
-                <input type="submit" value="Change Menu Name">
-            </form>
-        </div>
-
-
 
         <div id="changeTemplatesMenu" class="sub-tab-content">
             <form id="changeTemplatesMenuForm" enctype="multipart/form-data">
-                <input type="hidden" id="MenuIdToModifyTemplate" value="{{ menu.id }}">
+
 
                 <label for="NewMenuImage">New Menu Image:</label>
                 <input type="file" id="NewMenuImage" accept="image/*" required>
@@ -245,7 +218,6 @@ document.getElementById('addDishItemForm').addEventListener('submit', function (
 
     const DishItemName = document.getElementById('DishItemName').value;
     const DishItemPrice = document.getElementById('DishItemPrice').value;
-    const DishIdForMenu = document.getElementById('MenuIdForDish').value;
     const DishItemIngredients = document.getElementById('DishItemIngredients').value;
     const DishSection = document.getElementById('DishSection').value;
     const DishItemImageURL = document.getElementById('DishItemImageURL').files[0];
@@ -253,7 +225,6 @@ document.getElementById('addDishItemForm').addEventListener('submit', function (
     const formData = new FormData();
     formData.append('DishItemName', DishItemName);
     formData.append('DishItemPrice', DishItemPrice);
-    formData.append('DishIdForMenu', DishIdForMenu);
     formData.append('DishItemIngredients', DishItemIngredients);
     formData.append('DishItemImageURL', DishItemImageURL);
     formData.append('DishSection', DishSection);
@@ -479,15 +450,13 @@ function ChangeImageItem(formData) {
 document.getElementById('changeTemplatesMenuForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
-    const MenuIdToModifyTemplate = document.getElementById('MenuIdToModifyTemplate').value;
     const NewMenuImage = document.getElementById('NewMenuImage').files[0];
 
-    ChangeMenuImage(MenuIdToModifyTemplate, NewMenuImage);
+    ChangeMenuImage(NewMenuImage);
 });
 
-function ChangeMenuImage(MenuIdToModifyTemplate, NewMenuImage) {
+function ChangeMenuImage(NewMenuImage) {
     const formData = new FormData();
-    formData.append('MenuIdToModifyTemplate', MenuIdToModifyTemplate);
     formData.append('NewMenuImage', NewMenuImage);
 
     axios.post('/change_menu_image', formData, {
@@ -511,42 +480,10 @@ function ChangeMenuImage(MenuIdToModifyTemplate, NewMenuImage) {
         });
 }
 
-document.getElementById('changeMenuNameForm').addEventListener('submit', function (event) {
-    event.preventDefault();
-
-    const MenuId = document.getElementById('MenuIdToModify').value;
-    const NewMenuName = document.getElementById('NewMenuName').value;
-    console.log(MenuId)
-    changeMenuName(MenuId, NewMenuName);
-});
-
-
-function changeMenuName(MenuId, NewMenuName) {
-    axios.post('/change_menu_name', {
-        MenuId: MenuId,
-        NewMenuName: NewMenuName
-    })
-    .then(response => {
-        console.log(response.data);
-        toastr.success('Menu name successfully changed', 'Success', {
-            ...commonOptions,
-            iconClass: 'toast-success-rectangle'
-        });
-    })
-    .catch(error => {
-        console.error('Error changing menu name:', error);
-        toastr.error('Error changing menu name', 'Error', {
-            ...commonOptions,
-            iconClass: 'toast-error-rectangle'
-        });
-    });
-}
-
 function searchDishes() {
     const searchQuery = document.getElementById('searchQueryDish').value;
-    const menuId = document.getElementById('MenuIdToSearch').value;
 
-    axios.get(`/search_dishes?menu_id=${menuId}&search_query=${searchQuery}`)
+    axios.get(`/search_dishes?search_query=${searchQuery}`)
         .then(response => {
             const dishes = response.data;
             const searchResultsContainer = document.getElementById('searchResultsDish');
@@ -590,9 +527,8 @@ function searchDishes() {
         });
 }
 function loadDishes() {
-    const menuId = document.getElementById('MenuIdToView').value;
 
-    axios.get(`/fetch_dishes/${menuId}`)
+    axios.get(`/fetch_dishes`)
         .then(response => {
             const dishes = response.data;
             const viewDishContainer = document.getElementById('viewDishContainer');
