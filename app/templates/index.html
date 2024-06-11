@@ -30,7 +30,7 @@
                 <div class="py-4">
                     <span class="badge bg-primary mb-2">
                         {% if restaurant.status %}
-                            <a href="{{ url_for('main.show_qr_code', qr_code_type='restaurant', name=restaurant.name) }}" style="color: white;">QR code</a>
+                            Active
                         {% else %}
                             Inactive
                         {% endif %}

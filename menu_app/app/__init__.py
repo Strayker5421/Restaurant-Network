@@ -1,9 +1,11 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
+from flask_admin import Admin
 
 
 db = SQLAlchemy()
+admin = Admin(name="My Admin", template_mode="bootstrap3", url="/menu/admin/cat")
 
 
 def create_app(config_class=Config):
@@ -11,10 +13,11 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     db.init_app(app)
+    admin.init_app(app)
 
-    from app.menu import bp as menu_bp
+    from app.admin_panel import bp as admin_bp
 
-    app.register_blueprint(menu_bp)
+    app.register_blueprint(admin_bp)
 
     with app.app_context():
         db.create_all()

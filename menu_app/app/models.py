@@ -8,3 +8,8 @@ class Dish(db.Model):
     ingredients = db.Column(db.String(500), nullable=False)
     image = db.Column(db.String(255), nullable=True)
     section = db.Column(db.String(255), nullable=False)
+
+
+class Menu(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    image_path = db.Column(db.String(255), nullable=True)

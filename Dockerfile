@@ -1,4 +1,4 @@
-FROM python:3.11.4
+FROM python:3.11.4-slim-buster
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ ENV TZ=Europe/Moscow
 RUN apt-get update && apt-get install -y tzdata
 
 COPY app app
-COPY run.py docker-compose-menu.yml config.py boot.sh bootmenu.sh ./
+COPY run.py docker-compose-menu.yml config.py boot.sh bootmenu.sh nginx.conf.j2 nginx.conf ./
 
 RUN chmod +x boot.sh
 RUN chmod +x bootmenu.sh

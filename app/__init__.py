@@ -4,9 +4,10 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from config import Config
 from apscheduler.schedulers.background import BackgroundScheduler
-
+from flask_admin import Admin
 
 db = SQLAlchemy()
+admin = Admin(name="My Admin", template_mode="bootstrap3")
 migrate = Migrate()
 login = LoginManager()
 login.login_view = "auth.login"
@@ -19,6 +20,7 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     db.init_app(app)
+    admin.init_app(app)
     migrate.init_app(app, db)
     login.init_app(app)
 
@@ -30,7 +32,7 @@ def create_app(config_class=Config):
 
     app.register_blueprint(main_bp)
 
-    from app.admin import bp as admin_bp
+    from app.admin_panel import bp as admin_bp
 
     app.register_blueprint(admin_bp)
 

@@ -33,18 +33,11 @@ def menus_list(restaurant_id):
     return render_template("menus.html", restaurant=restaurant, menus=menus)
 
 
-@bp.route("/qr_code/<qr_code_type>/<name>")
+@bp.route("/qr_code/<name>")
 @login_required
-def show_qr_code(qr_code_type, name):
+def show_qr_code(name):
     filename = f"{name}_qr_code.png"
-    if qr_code_type == "restaurant":
-        qr_code_path = url_for(
-            "static", filename=f"images/qr_code/restaurants/{filename}"
-        )
-    elif qr_code_type == "menu":
-        qr_code_path = url_for("static", filename=f"images/qr_code/menus/{filename}")
-    else:
-        abort(400, description="Invalid type provided")
+    qr_code_path = url_for("static", filename=f"images/qr_code/{filename}")
     return render_template("_show_qr_code.html", qr_code_path=qr_code_path)
 
 
@@ -102,9 +95,7 @@ def extend(restaurant_id, menu_id, duration):
 def renew(restaurant_id, menu_id, duration):
     restaurant = Restaurant.query.get(restaurant_id)
     menu = Menu.query.get(menu_id)
-    moscow_tz = pytz.timezone("Europe/Moscow")
-    current_time_moscow = datetime.now().astimezone(moscow_tz)
-    menu.expiration_date = current_time_moscow + timedelta(minutes=duration)
+    menu.expiration_date = datetime.now() + timedelta(minutes=duration)
     db.session.commit()
     flash("Your subscription renewed!")
     return redirect(url_for("main.menus_list", restaurant_id=restaurant.id))

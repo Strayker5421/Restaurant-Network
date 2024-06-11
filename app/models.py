@@ -6,8 +6,12 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from datetime import datetime
 from docker import DockerClient
 from sqlalchemy import create_engine, text
-import os
+import os, time
 import subprocess, pytz
+from jinja2 import Environment, FileSystemLoader
+from docker import DockerClient
+import qrcode
+from flask import url_for
 
 
 class User(UserMixin, db.Model):
@@ -46,15 +50,15 @@ class Menu(db.Model):
     name = db.Column(db.String(255), nullable=False)
     status = db.Column(db.Boolean, default=False)
     expiration_date = db.Column(
-        db.DateTime(timezone=True),
+        db.DateTime,
         index=True,
-        default=datetime.now(pytz.timezone("Europe/Moscow")),
+        default=datetime.now,
     )
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"))
     PORT = 8000
 
     def check_subscription(self):
-        new_status = datetime.now(pytz.timezone("Europe/Moscow")) < self.expiration_date
+        new_status = datetime.now() < self.expiration_date
         if new_status != self.status:
             self.status = new_status
             db.session.commit()
@@ -81,8 +85,34 @@ class Menu(db.Model):
                     self.restaurant.name.split(" ")[0].lower(),
                 )
 
-    @staticmethod
-    def start_container(menu_name, restaurant_name, port=PORT):
+    def generate_and_save_qr_code(self, container_ip, port):
+        try:
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+
+            qr.add_data(f"http://45.93.201.166:{port}/menu")
+            save_path = os.path.join("app", "static", "images", "qr_code")
+
+            qr.make(fit=True)
+            qr_image = qr.make_image(fill_color="black", back_color="white")
+
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+
+            filename = f"{self.name}_qr_code.png"
+            qr_image.save(os.path.join(save_path, filename))
+
+            qr_image_path = url_for("static", filename=f"images/qr_code/{filename}")
+
+            return qr_image_path
+        except Exception as e:
+            return None
+
+    def start_container(self, menu_name, restaurant_name, port=PORT):
         os.environ["APP_PORT"] = str(port)
         subprocess.run(
             [
@@ -93,6 +123,62 @@ class Menu(db.Model):
                 f"menu-{restaurant_name}-{menu_name}",
                 "up",
                 "-d",
+            ]
+        )
+        time.sleep(5)
+        self.change_nginx_conf(menu_name, restaurant_name, port)
+
+    def change_nginx_conf(self, menu_name, restaurant_name, port):
+        client = DockerClient.from_env()
+        containers = client.containers.list(
+            filters={"name": f"menu-{restaurant_name}-{menu_name}"}
+        )
+        container_ip = containers[0].attrs["NetworkSettings"]["Networks"]["frontnet"][
+            "IPAddress"
+        ]
+        self.generate_and_save_qr_code(container_ip, port)
+        new_location_block = f"""
+    location /menu/{self.id} {{
+        proxy_pass http://{container_ip}:80/menu;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }}
+    location /menu/{self.id}/admin/cat {{
+        proxy_pass http://{container_ip}:80/menu/admin;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        """
+        nginx_conf_path = os.path.join(os.getcwd(), "nginx.conf")
+        with open(nginx_conf_path, "r") as f:
+            lines = f.readlines()
+
+        if f"    location /menu/{self.id} {{\n" not in lines:
+            insert_index = (
+                lines.index("    #error_page  404              /404.html;\n") - 1
+            )
+            lines.insert(insert_index, new_location_block)
+
+        with open(nginx_conf_path, "w") as f:
+            f.writelines(lines)
+
+        subprocess.run(
+            [
+                "docker",
+                "cp",
+                nginx_conf_path,
+                f"root-nginx-1:/etc/nginx/conf.d/default.conf",
+            ]
+        )
+
+        subprocess.run(
+            [
+                "docker",
+                "restart",
+                "root-nginx-1",
             ]
         )
 

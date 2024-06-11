@@ -18,7 +18,7 @@ def login():
             flash("Invalid username or password")
             return redirect(url_for("auth.login"))
         if user.role:
-            return redirect(url_for("admin.administrator"))
+            return redirect("/admin")
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get("next")
         if not next_page or urlsplit(next_page).netloc != "":
