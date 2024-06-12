@@ -11,10 +11,10 @@ services:
   resos_menu_postgres:
     image: postgres
     volumes:
-      - resos-menu-postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: 20453843
       POSTGRES_DB: resos_menu_db
 
 volumes:
-  resos-menu-postgres-data:
+  postgres-data:

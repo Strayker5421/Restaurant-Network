@@ -7,6 +7,7 @@ RUN adduser appuser
 COPY requirements.txt requirements.txt
 RUN python -m venv venv
 RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y postgresql-client
 
 COPY ./menu_app/app app
 COPY ./menu_app/run.py ./run.py

@@ -12,7 +12,7 @@ services:
       - menu_net
     volumes:
       - type: volume
-        source: static_data
+        source: {{ volume_name }}
         target: /app/app/static
 
   resos_menu_postgres:
@@ -26,7 +26,8 @@ services:
       - menu_net
 
 volumes:
-  static_data:
+  {{ volume_name }}:
+    external: false
   postgres-data:
 
 networks:

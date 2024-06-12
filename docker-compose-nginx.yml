@@ -1,0 +1,11 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    networks:
+      - menu_net
+
+networks:
+  menu_net:
+    external: true

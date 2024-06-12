@@ -5,11 +5,11 @@ from flask_admin import Admin
 
 
 db = SQLAlchemy()
-admin = Admin(name="My Admin", template_mode="bootstrap3", url="/menu/admin/cat")
+admin = Admin(name="My Admin", template_mode="bootstrap3", url="/menu/admin")
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path="/static")
     app.config.from_object(config_class)
 
     db.init_app(app)

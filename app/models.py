@@ -1,17 +1,16 @@
 import docker.errors
+import app
 from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import ARRAY
 from datetime import datetime
-from docker import DockerClient
-from sqlalchemy import create_engine, text
 import os, time
-import subprocess, pytz
+import subprocess
 from jinja2 import Environment, FileSystemLoader
 from docker import DockerClient
 import qrcode
-from flask import url_for
+from flask import url_for, current_app
 
 
 class User(UserMixin, db.Model):
@@ -85,7 +84,7 @@ class Menu(db.Model):
                     self.restaurant.name.split(" ")[0].lower(),
                 )
 
-    def generate_and_save_qr_code(self, container_ip, port):
+    def generate_and_save_qr_code(self, container_address, name):
         try:
             qr = qrcode.QRCode(
                 version=1,
@@ -94,7 +93,7 @@ class Menu(db.Model):
                 border=4,
             )
 
-            qr.add_data(f"http://45.93.201.166:{port}/menu")
+            qr.add_data(f"http://{container_address}/menu/{name}")
             save_path = os.path.join("app", "static", "images", "qr_code")
 
             qr.make(fit=True)
@@ -113,7 +112,17 @@ class Menu(db.Model):
             return None
 
     def start_container(self, menu_name, restaurant_name, port=PORT):
+        volume_name = "static"
+
         os.environ["APP_PORT"] = str(port)
+
+        env = Environment(loader=FileSystemLoader(current_app.config["TEMPLATE_DIR"]))
+
+        compose_template = env.get_template("docker-compose-menu-template.j2")
+
+        with open("docker-compose-menu.yml", "w") as f:
+            f.write(compose_template.render(volume_name=volume_name))
+
         subprocess.run(
             [
                 "docker-compose",
@@ -126,37 +135,61 @@ class Menu(db.Model):
             ]
         )
         time.sleep(5)
-        self.change_nginx_conf(menu_name, restaurant_name, port)
+        self.change_nginx_conf(menu_name, restaurant_name)
 
-    def change_nginx_conf(self, menu_name, restaurant_name, port):
+    def change_nginx_conf(self, menu_name, restaurant_name):
         client = DockerClient.from_env()
         containers = client.containers.list(
             filters={"name": f"menu-{restaurant_name}-{menu_name}"}
         )
-        container_ip = containers[0].attrs["NetworkSettings"]["Networks"]["frontnet"][
+        container_ip = containers[0].attrs["NetworkSettings"]["Networks"]["menu_net"][
             "IPAddress"
         ]
-        self.generate_and_save_qr_code(container_ip, port)
+
+        menu_config = {
+            "name": f"{restaurant_name}_{menu_name}",
+            "container_address": f"{container_ip}:80",
+            "static_volume": f"menu-{restaurant_name}-{menu_name}_static",
+        }
+
+        self.generate_and_save_qr_code(
+            menu_config["container_address"], menu_config["name"]
+        )
+
+        env = Environment(loader=FileSystemLoader(current_app.config["TEMPLATE_DIR"]))
+
+        compose_template = env.get_template("docker-compose-nginx-template.j2")
+
+        with open("docker-compose-nginx.yml", "w") as f:
+            f.write(compose_template.render(menu_config=menu_config))
+
         new_location_block = f"""
-    location /menu/{self.id} {{
-        proxy_pass http://{container_ip}:80/menu;
+    location /menu/{menu_config['name']} {{
+        proxy_pass http://{menu_config['container_address']}/menu;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }}
-    location /menu/{self.id}/admin/cat {{
-        proxy_pass http://{container_ip}:80/menu/admin;
+    location /menu/{menu_config['name']}/admin/cat {{
+        proxy_pass http://localhost:{Menu.PORT};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }}
+    location /static {{
+        alias /static;
+        expires 30d;
+    }}
         """
+
         nginx_conf_path = os.path.join(os.getcwd(), "nginx.conf")
+
         with open(nginx_conf_path, "r") as f:
             lines = f.readlines()
 
-        if f"    location /menu/{self.id} {{\n" not in lines:
+        if f"    location /menu/{menu_config['name']} {{\n" not in lines:
             insert_index = (
                 lines.index("    #error_page  404              /404.html;\n") - 1
             )
@@ -167,20 +200,36 @@ class Menu(db.Model):
 
         subprocess.run(
             [
-                "docker",
-                "cp",
-                nginx_conf_path,
-                f"root-nginx-1:/etc/nginx/conf.d/default.conf",
+                "docker-compose",
+                "-f",
+                "docker-compose-nginx.yml",
+                "--project-name",
+                "nginx",
+                "down",
+            ]
+        )
+
+        subprocess.run(
+            [
+                "docker-compose",
+                "-f",
+                "docker-compose-nginx.yml",
+                "--project-name",
+                "nginx",
+                "up",
+                "-d",
             ]
         )
 
         subprocess.run(
             [
                 "docker",
-                "restart",
-                "root-nginx-1",
+                "cp",
+                nginx_conf_path,
+                f"nginx-nginx-1:/etc/nginx/conf.d/default.conf",
             ]
         )
+        subprocess.run(["docker", "exec", "nginx-nginx-1", "nginx", "-s", "reload"])
 
     @staticmethod
     def stop_container(menu_name, restaurant_name):

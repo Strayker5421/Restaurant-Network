@@ -1,0 +1,17 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - {{ menu_config.static_volume }}:/static
+    networks:
+      - menu_net
+
+volumes:
+  {{ menu_config.static_volume }}:
+    external: true
+
+networks:
+  menu_net:
+    external: true
