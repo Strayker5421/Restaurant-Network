@@ -12,18 +12,28 @@
         <div class="col mb-4">
             <div>
                 {% if restaurant.images|length == 1 %}
+                <a href="{{ url_for('main.menus_list', restaurant_id=restaurant.id) }}">
                     <img class="rounded img-fluid shadow w-100 fit-cover" src="{{ restaurant.images[0] }}" style="height: 300px;" alt="{{ restaurant.name }}"/>
+                </a>
                 {% elif restaurant.images|length == 2 %}
                     <div class="grid-container" style="grid-template-columns: repeat(2, 1fr);">
                         {% for image in restaurant.images %}
-                            <img class="grid-item rounded img-fluid shadow w-100 fit-cover" src="{{ image }}" style="height: 300px;" alt="{{ restaurant.name }}"/>
+                            <a href="{{ url_for('main.menus_list', restaurant_id=restaurant.id) }}">
+                                <img class="grid-item rounded img-fluid shadow w-100 fit-cover" src="{{ image }}" style="height: 300px;" alt="{{ restaurant.name }}"/>
+                            </a>
                         {% endfor %}
                     </div>
                 {% elif restaurant.images|length == 3 %}
-                    <img class="rounded img-fluid shadow w-100 fit-cover" src="{{ restaurant.images[0] }}" style="height: 250px;" alt="{{ restaurant.name }}"/>
+                    <a href="{{ url_for('main.menus_list', restaurant_id=restaurant.id) }}">
+                        <img class="rounded img-fluid shadow w-100 fit-cover" src="{{ restaurant.images[0] }}" style="height: 250px;" alt="{{ restaurant.name }}"/>
+                    </a>
                     <div class="grid-container" style="grid-template-columns: repeat(2, 1fr); margin-top: 5px;">
-                        <img class="grid-item rounded img-fluid shadow w-100 fit-cover" src="{{ restaurant.images[1] }}" alt="{{ restaurant.name }}"/>
-                        <img class="grid-item rounded img-fluid shadow w-100 fit-cover" src="{{ restaurant.images[2] }}" alt="{{ restaurant.name }}"/>
+                        <a href="{{ url_for('main.menus_list', restaurant_id=restaurant.id) }}">
+                            <img class="grid-item rounded img-fluid shadow w-100 fit-cover" src="{{ restaurant.images[1] }}" alt="{{ restaurant.name }}"/>
+                        </a>
+                        <a href="{{ url_for('main.menus_list', restaurant_id=restaurant.id) }}">
+                            <img class="grid-item rounded img-fluid shadow w-100 fit-cover" src="{{ restaurant.images[2] }}" alt="{{ restaurant.name }}"/>
+                        </a>
                     </div>
                 {% else %}
                 {% endif %}

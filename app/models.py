@@ -169,11 +169,7 @@ class Menu(db.Model):
 
         env = Environment(loader=FileSystemLoader(current_app.config["TEMPLATE_DIR"]))
 
-        compose_template = env.get_template("docker-compose-nginx-template.j2")
         nginx_template = env.get_template("nginx-template.j2")
-
-        with open("docker-compose-nginx.yml", "w") as f:
-            f.write(compose_template.render(menu_config=menu_config))
 
         new_config = nginx_template.render(
             menu_name=menu_config["name"],
@@ -183,13 +179,10 @@ class Menu(db.Model):
         with open("nginx.conf", "r") as f:
             lines = f.readlines()
 
-        if new_config in "".join(lines):
-            return
-
-        lines.append(new_config + "\n")
-
-        with open("nginx.conf", "w") as f:
-            f.writelines(lines)
+        if new_config not in "".join(lines):
+            lines.append(new_config + "\n")
+            with open("nginx.conf", "w") as f:
+                f.writelines(lines)
 
         nginx_conf_path = os.path.join(os.getcwd(), "nginx.conf")
 
