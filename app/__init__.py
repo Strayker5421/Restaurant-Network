@@ -1,13 +1,27 @@
-from flask import Flask
+from flask import Flask, flash, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from config import Config
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_admin import Admin
+from flask_login import current_user
+from flask_admin import AdminIndexView, expose
+
+
+class MyAdminIndexView(AdminIndexView):
+    @expose("/")
+    def index(self):
+        if not current_user.is_authenticated or not current_user.role:
+            flash("You need to log in to access the admin page.", "danger")
+            return redirect(url_for("auth.login"))
+        return super(MyAdminIndexView, self).index()
+
 
 db = SQLAlchemy()
-admin = Admin(name="My Admin", template_mode="bootstrap3")
+admin = Admin(
+    name="My Admin", template_mode="bootstrap3", index_view=MyAdminIndexView()
+)
 migrate = Migrate()
 login = LoginManager()
 login.login_view = "auth.login"

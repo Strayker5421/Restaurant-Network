@@ -3,9 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flask_admin import Admin
 
-
 db = SQLAlchemy()
-admin = Admin(name="My Admin", template_mode="bootstrap3", url="/menu/admin")
+admin = Admin(
+    name="My Admin", template_mode="bootstrap3", url=f"/admin/{Config.ADMIN_TOKEN}"
+)
 
 
 def create_app(config_class=Config):

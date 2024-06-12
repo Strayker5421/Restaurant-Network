@@ -6,10 +6,9 @@ if [ -d "migrations" ] && [ "$(ls -A migrations)" ]; then
 else
     echo "Migrations directory does not exist or is empty. Initializing and migrating..."
     flask db init
-    flask db migrate
 fi
 
-until flask db upgrade; do
+until flask db migrate && flask db upgrade; do
     echo "Upgrade command failed, retrying in 5 secs..."
     sleep 5
 done

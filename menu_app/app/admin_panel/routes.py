@@ -23,11 +23,6 @@ from markupsafe import Markup
 
 @bp.route("/", methods=["GET", "POST"])
 def index():
-    return "Hello, World!"
-
-
-@bp.route("/menu", methods=["GET", "POST"])
-def show_menu():
     dishes = Dish.query.all()
     return render_template("single_menu.html", dishes=dishes)
 

@@ -1,0 +1,31 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="container">
+    <h1>Custom View</h1>
+    <div id="custom-content">
+        {% for key, value in data.items() %}
+            <p>{{ key }}: {{ value }}</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        function loadContent() {
+            $.ajax({
+                type: 'POST',
+                url: '/admin/custom/',
+                success: function(response) {
+                    $('#custom-content').html(response);
+                },
+                error: function(error) {
+                    console.error('Ошибка при загрузке содержимого:', error);
+                }
+            });
+        }
+
+        loadContent();
+    });
+</script>
+{% endblock %}

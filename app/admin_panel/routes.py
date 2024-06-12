@@ -16,6 +16,22 @@ from datetime import datetime
 from wtforms.fields import SelectField
 from markupsafe import Markup
 from app.admin_panel import bp
+from flask_admin import expose, BaseView
+
+
+class MyModelView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.role
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for("auth.login", next=request.url))
+
+
+class CustomView(BaseView):
+    @expose("/")
+    def index(self):
+        data = {"name": "John", "age": 30, "email": "john@example.com"}
+        return self.render("custom_view.html", data=data)
 
 
 class RestaurantForm(FlaskForm):
@@ -155,7 +171,7 @@ class UserAdminForm(FlaskForm):
 class UserAdmin(ModelView):
     form = UserAdminForm
     form_columns = ["id", "username", "email", "password_hash", "role"]
-    column_list = ["id", "username", "email", "password_hash", "role"]
+    column_list = ["id", "username", "email", "password_hash", "role", "admin_token"]
 
     def role_formatter(view, context, model, name):
         if model.role:
@@ -166,6 +182,9 @@ class UserAdmin(ModelView):
     column_formatters = {"role": role_formatter}
 
     def on_model_change(self, form, model, is_created):
+        if is_created:
+            if not model.role:
+                model.generate_admin_token()
         if "password_hash" in form.data:
             model.set_password(form.data["password_hash"])
 
@@ -273,6 +292,7 @@ class MenuAdmin(ModelView):
 admin.add_view(UserAdmin(User, db.session))
 admin.add_view(RestaurantAdmin(Restaurant, db.session))
 admin.add_view(MenuAdmin(Menu, db.session))
+admin.add_view(CustomView(name="Custom", endpoint="custom"))
 
 
 def save_image(images, path):

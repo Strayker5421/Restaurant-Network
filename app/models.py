@@ -11,6 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 from docker import DockerClient
 import qrcode
 from flask import url_for, current_app
+import jwt
 
 
 class User(UserMixin, db.Model):
@@ -22,6 +23,13 @@ class User(UserMixin, db.Model):
     restaurants = db.relationship(
         "Restaurant", backref="user", lazy="dynamic", cascade="all, delete-orphan"
     )
+    admin_token = db.Column(db.String(256))
+
+    def generate_admin_token(self):
+        payload = {"user_id": self.id, "timestamp": datetime.utcnow().timestamp()}
+        self.admin_token = jwt.encode(
+            payload, current_app.config["SECRET_KEY"], algorithm="HS256"
+        )
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -84,7 +92,7 @@ class Menu(db.Model):
                     self.restaurant.name.split(" ")[0].lower(),
                 )
 
-    def generate_and_save_qr_code(self, container_address, name):
+    def generate_and_save_qr_code(self, name):
         try:
             qr = qrcode.QRCode(
                 version=1,
@@ -93,7 +101,7 @@ class Menu(db.Model):
                 border=4,
             )
 
-            qr.add_data(f"http://{container_address}/menu/{name}")
+            qr.add_data(f"http://{name}.localhost")
             save_path = os.path.join("app", "static", "images", "qr_code")
 
             qr.make(fit=True)
@@ -121,7 +129,12 @@ class Menu(db.Model):
         compose_template = env.get_template("docker-compose-menu-template.j2")
 
         with open("docker-compose-menu.yml", "w") as f:
-            f.write(compose_template.render(volume_name=volume_name))
+            f.write(
+                compose_template.render(
+                    volume_name=volume_name,
+                    admin_token=self.restaurant.user.admin_token,
+                )
+            )
 
         subprocess.run(
             [
@@ -135,9 +148,9 @@ class Menu(db.Model):
             ]
         )
         time.sleep(5)
-        self.change_nginx_conf(menu_name, restaurant_name)
+        self.change_config(menu_name, restaurant_name)
 
-    def change_nginx_conf(self, menu_name, restaurant_name):
+    def change_config(self, menu_name, restaurant_name):
         client = DockerClient.from_env()
         containers = client.containers.list(
             filters={"name": f"menu-{restaurant_name}-{menu_name}"}
@@ -152,51 +165,33 @@ class Menu(db.Model):
             "static_volume": f"menu-{restaurant_name}-{menu_name}_static",
         }
 
-        self.generate_and_save_qr_code(
-            menu_config["container_address"], menu_config["name"]
-        )
+        self.generate_and_save_qr_code(menu_config["name"])
 
         env = Environment(loader=FileSystemLoader(current_app.config["TEMPLATE_DIR"]))
 
         compose_template = env.get_template("docker-compose-nginx-template.j2")
+        nginx_template = env.get_template("nginx-template.j2")
 
         with open("docker-compose-nginx.yml", "w") as f:
             f.write(compose_template.render(menu_config=menu_config))
 
-        new_location_block = f"""
-    location /menu/{menu_config['name']} {{
-        proxy_pass http://{menu_config['container_address']}/menu;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }}
-    location /menu/{menu_config['name']}/admin/cat {{
-        proxy_pass http://localhost:{Menu.PORT};
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }}
-    location /static {{
-        alias /static;
-        expires 30d;
-    }}
-        """
+        new_config = nginx_template.render(
+            menu_name=menu_config["name"],
+            container_address=menu_config["container_address"],
+        )
 
-        nginx_conf_path = os.path.join(os.getcwd(), "nginx.conf")
-
-        with open(nginx_conf_path, "r") as f:
+        with open("nginx.conf", "r") as f:
             lines = f.readlines()
 
-        if f"    location /menu/{menu_config['name']} {{\n" not in lines:
-            insert_index = (
-                lines.index("    #error_page  404              /404.html;\n") - 1
-            )
-            lines.insert(insert_index, new_location_block)
+        if new_config in "".join(lines):
+            return
 
-        with open(nginx_conf_path, "w") as f:
+        lines.append(new_config + "\n")
+
+        with open("nginx.conf", "w") as f:
             f.writelines(lines)
+
+        nginx_conf_path = os.path.join(os.getcwd(), "nginx.conf")
 
         subprocess.run(
             [
