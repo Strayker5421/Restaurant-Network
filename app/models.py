@@ -121,6 +121,9 @@ class Menu(db.Model):
 
     def start_container(self, menu_name, restaurant_name, port=PORT):
         volume_name = "static"
+        project_name = f"menu-{restaurant_name}-{menu_name}"
+        menu_container_name = f"menu-{restaurant_name}-{menu_name}-app"
+        menu_db_container_name = f"menu-{restaurant_name}-{menu_name}-db"
 
         os.environ["APP_PORT"] = str(port)
 
@@ -131,6 +134,8 @@ class Menu(db.Model):
         with open("docker-compose-menu.yml", "w") as f:
             f.write(
                 compose_template.render(
+                    menu_container_name=menu_container_name,
+                    menu_db_container_name=menu_db_container_name,
                     volume_name=volume_name,
                     admin_token=self.restaurant.user.admin_token,
                 )
@@ -142,19 +147,17 @@ class Menu(db.Model):
                 "-f",
                 "docker-compose-menu.yml",
                 "--project-name",
-                f"menu-{restaurant_name}-{menu_name}",
+                project_name,
                 "up",
                 "-d",
             ]
         )
         time.sleep(5)
-        self.change_config(menu_name, restaurant_name)
+        self.change_config(menu_name, restaurant_name, menu_container_name)
 
-    def change_config(self, menu_name, restaurant_name):
+    def change_config(self, menu_name, restaurant_name, menu_container_name):
         client = DockerClient.from_env()
-        containers = client.containers.list(
-            filters={"name": f"menu-{restaurant_name}-{menu_name}"}
-        )
+        containers = client.containers.list(filters={"name": menu_container_name})
         container_ip = containers[0].attrs["NetworkSettings"]["Networks"]["menu_net"][
             "IPAddress"
         ]
@@ -192,7 +195,7 @@ class Menu(db.Model):
                 "-f",
                 "docker-compose-nginx.yml",
                 "--project-name",
-                "nginx",
+                "nginx-net",
                 "down",
             ]
         )
@@ -203,7 +206,7 @@ class Menu(db.Model):
                 "-f",
                 "docker-compose-nginx.yml",
                 "--project-name",
-                "nginx",
+                "nginx-net",
                 "up",
                 "-d",
             ]
@@ -214,10 +217,10 @@ class Menu(db.Model):
                 "docker",
                 "cp",
                 nginx_conf_path,
-                f"nginx-nginx-1:/etc/nginx/conf.d/default.conf",
+                f"nginx:/etc/nginx/conf.d/default.conf",
             ]
         )
-        subprocess.run(["docker", "exec", "nginx-nginx-1", "nginx", "-s", "reload"])
+        subprocess.run(["docker", "exec", "nginx", "nginx", "-s", "reload"])
 
     @staticmethod
     def stop_container(menu_name, restaurant_name):

@@ -1,6 +1,7 @@
 services:
   app:
     image: ir0h/resos
+    container_name: res_app
     ports:
       - 10000:80
     environment:
@@ -17,13 +18,14 @@ services:
 
   resos_postgres:
     image: postgres
+    container_name: res_db
     volumes:
-      - resos-postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: 20453843
       POSTGRES_DB: resos_db
 
 volumes:
-  resos-postgres-data:
+  postgres-data:
   migrations:
   static-volume:
