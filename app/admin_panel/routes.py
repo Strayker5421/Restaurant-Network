@@ -24,7 +24,7 @@ class MyModelView(ModelView):
         return current_user.is_authenticated and current_user.role
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for("auth.login", next=request.url))
+        return redirect(url_for("auth.login"))
 
 
 class CustomView(BaseView):
@@ -36,7 +36,6 @@ class CustomView(BaseView):
 
 class RestaurantForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    status = BooleanField("Status")
     user_id = StringField("User ID")
     photo = MultipleFileField(
         "Photo",
@@ -51,7 +50,7 @@ class RestaurantForm(FlaskForm):
 class RestaurantAdmin(ModelView):
     form = RestaurantForm
 
-    form_columns = ["name", "status", "user_id", "photo"]
+    form_columns = ["name", "user_id", "photo"]
     column_list = ["id", "name", "status", "images", "user_id"]
     column_sortable_list = ["id", "name", "status", "user_id"]
     column_searchable_list = ["id", "name", "status", "user_id"]
@@ -139,7 +138,7 @@ class RestaurantAdmin(ModelView):
                     "You cannot assign a user with status True to a restaurant.",
                     "error",
                 )
-                return False  # Предотвращаем создание модели
+                return False
         return super(RestaurantAdmin, self).create_model(form)
 
     def update_model(self, form, model):
@@ -151,13 +150,13 @@ class RestaurantAdmin(ModelView):
                     "You cannot assign a user with status True to a restaurant.",
                     "error",
                 )
-                return False  # Предотвращаем обновление модели
+                return False
             if old_user and old_user.role:
                 flash(
                     "You cannot assign a user with status True to a restaurant.",
                     "error",
                 )
-                return False  # Предотвращаем обновление модели
+                return False
         return super(RestaurantAdmin, self).update_model(form, model)
 
 
@@ -265,7 +264,6 @@ class MenuAdmin(ModelView):
             expiration_time = int(form.expiration_minutes.data)
             expiration_date = datetime.now() + timedelta(minutes=expiration_time)
             model.expiration_date = expiration_date
-            model.status = True if expiration_time != 0 else False
 
         return super(MenuAdmin, self).on_model_change(form, model, is_created)
 

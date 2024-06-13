@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and not current_user.role:
         return redirect(url_for("main.index"))
     form = LoginForm()
     if form.validate_on_submit():
@@ -18,11 +18,11 @@ def login():
             flash("Invalid username or password", "danger")
             return redirect(url_for("auth.login"))
         login_user(user, remember=form.remember_me.data)
+        if user.role:
+            return redirect(url_for("admin.index"))
         next_page = request.args.get("next")
         if not next_page or urlsplit(next_page).netloc != "":
             next_page = url_for("main.index")
-        if user.role:
-            return redirect(url_for("admin.index"))
         return redirect(next_page)
     return render_template("auth/login.html", title="Sign In", form=form)
 

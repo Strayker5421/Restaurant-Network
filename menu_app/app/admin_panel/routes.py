@@ -49,11 +49,9 @@ class DishForm(FlaskForm):
     )
 
 
-# Обновленный класс представления администрирования ресторанов
 class DishAdmin(ModelView):
-    form = DishForm  # Используем новую форму
+    form = DishForm
 
-    # Включаем поле для фотографии в форму
     form_columns = ["name", "ingredients", "price", "section", "image"]
     column_list = ["id", "name", "ingredients", "price", "section", "image"]
     column_sortable_list = ["id", "name", "price", "section"]
@@ -109,7 +107,6 @@ class DishAdmin(ModelView):
 
             model.image = images_paths[0]
 
-        # Продолжаем выполнение остальной части метода
         if is_created:
             flash(f"Dish {model.name} was successfully created!", "success")
         else:
@@ -126,15 +123,11 @@ class MenuForm(FlaskForm):
     )
 
 
-# Класс представления для администрирования меню
 class MenuAdminView(ModelView):
-    # Определяем форму для редактирования меню
     form = MenuForm
 
-    # Определяем колонки для отображения в списке
     column_list = ["template"]
 
-    # Определяем форматтер для отображения изображений
     def template_formatter(self, context, model, name):
         template_folder = "app/static/images/menu_templates"
         files = os.listdir(template_folder)
@@ -146,26 +139,21 @@ class MenuAdminView(ModelView):
         else:
             return "No template image available"
 
-    # Подключаем форматтер к колонке
     column_formatters = {"template": template_formatter}
 
-    # Метод для изменения модели меню
     def on_model_change(self, form, model, is_created):
         if "template" in request.files:
             template_folder = os.path.join("app", "static", "images", "menu_templates")
 
-            # Удаляем все файлы из папки template_folder
             for filename in os.listdir(template_folder):
                 file_path = os.path.join(template_folder, filename)
                 if os.path.isfile(file_path):
                     os.remove(file_path)
 
-            # Обработка нового загруженного файла
             file = request.files["template"]
             filename = secure_filename(file.filename)
             file.save(os.path.join(template_folder, filename))
 
-            # Продолжаем выполнение остальной части метода
             if is_created:
                 flash(f"Menu_template was successfully created!", "success")
             else:
@@ -173,19 +161,15 @@ class MenuAdminView(ModelView):
 
         return super(MenuAdminView, self).on_model_change(form, model, is_created)
 
-    # Метод для удаления модели меню
     def on_model_delete(self, model):
         try:
-            # Путь к папке с шаблонами
             template_folder = os.path.join("app", "static", "images", "menu_templates")
 
-            # Удаление всех файлов в папке
             for filename in os.listdir(template_folder):
                 file_path = os.path.join(template_folder, filename)
                 if os.path.isfile(file_path):
                     os.remove(file_path)
 
-            # Удаляем саму модель
             db.session.delete(model)
             db.session.commit()
             flash(f"Template  was successfully deleted!", "success")
@@ -196,7 +180,6 @@ class MenuAdminView(ModelView):
         return super(MenuAdminView, self).on_model_delete(model)
 
 
-# Добавляем представления в админ-панель
 admin.add_view(DishAdmin(Dish, db.session))
 admin.add_view(MenuAdminView(Menu, db.session))
 

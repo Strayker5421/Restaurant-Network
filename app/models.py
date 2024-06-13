@@ -101,7 +101,7 @@ class Menu(db.Model):
                 border=4,
             )
 
-            qr.add_data(f"http://{name}.localhost")
+            qr.add_data(f"http://{name}.3069535-ab61855.twc1.net")
             save_path = os.path.join("app", "static", "images", "qr_code")
 
             qr.make(fit=True)
@@ -163,7 +163,7 @@ class Menu(db.Model):
         ]
 
         menu_config = {
-            "name": f"{restaurant_name}_{menu_name}",
+            "name": f"{restaurant_name}-{menu_name}",
             "container_address": f"{container_ip}:80",
             "static_volume": f"menu-{restaurant_name}-{menu_name}_static",
         }
@@ -188,29 +188,6 @@ class Menu(db.Model):
                 f.writelines(lines)
 
         nginx_conf_path = os.path.join(os.getcwd(), "nginx.conf")
-
-        subprocess.run(
-            [
-                "docker-compose",
-                "-f",
-                "docker-compose-nginx.yml",
-                "--project-name",
-                "nginx-net",
-                "down",
-            ]
-        )
-
-        subprocess.run(
-            [
-                "docker-compose",
-                "-f",
-                "docker-compose-nginx.yml",
-                "--project-name",
-                "nginx-net",
-                "up",
-                "-d",
-            ]
-        )
 
         subprocess.run(
             [
