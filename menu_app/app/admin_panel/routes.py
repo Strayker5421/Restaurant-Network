@@ -24,7 +24,15 @@ from markupsafe import Markup
 @bp.route("/", methods=["GET", "POST"])
 def index():
     dishes = Dish.query.all()
-    return render_template("single_menu.html", dishes=dishes)
+    if Menu.query.first() is None:
+        menu_template_path = url_for(
+            "static", filename="images/menu_templates/menu_template1.jpg"
+        )
+    else:
+        menu_template_path = Menu.query.first().image_path
+    return render_template(
+        "single_menu.html", menu_template_path=menu_template_path, dishes=dishes
+    )
 
 
 class DishForm(FlaskForm):
@@ -118,57 +126,63 @@ class DishAdmin(ModelView):
 
 class MenuForm(FlaskForm):
     template = FileField(
-        "template",
+        "Template",
         validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Images only!")],
+    )
+    existing_template = SelectField(
+        "Existing Template",
+        choices=[("---", "---")]
+        + [
+            (f, f)
+            for f in os.listdir(
+                os.path.join("app", "static", "images", "menu_templates")
+            )
+        ],
+        default="---",
     )
 
 
 class MenuAdminView(ModelView):
     form = MenuForm
 
-    column_list = ["template"]
+    column_list = ["Template"]
 
-    def template_formatter(self, context, model, name):
-        template_folder = "app/static/images/menu_templates"
-        files = os.listdir(template_folder)
-        if files:
-            template_filename = files[0]
-            template_path = f"/static/images/menu_templates/{template_filename}"
-            image_html = f'<img src="{template_path}" style="max-width:100px; max-height:100px; width:auto; height:auto;"/>'
+    def image_path_formatter(view, context, model, name):
+        if model.image_path:
+            image_html = f'<img src="{model.image_path}" style="max-width:100px; max-height:100px; width:auto; height:auto;"/>'
             return Markup(image_html)
         else:
-            return "No template image available"
+            return ""
 
-    column_formatters = {"template": template_formatter}
+    column_formatters = {"Template": image_path_formatter}
 
     def on_model_change(self, form, model, is_created):
-        if "template" in request.files:
+        if Menu.query.first():
+            model = Menu.query.first()
+
+        if form.template.data:
             template_folder = os.path.join("app", "static", "images", "menu_templates")
+            template = form.template.data
+            filename = secure_filename(template.filename)
+            template.save(os.path.join(template_folder, filename))
+            model.image_path = url_for(
+                "static", filename="images/menu_templates/" + filename
+            )
 
-            for filename in os.listdir(template_folder):
-                file_path = os.path.join(template_folder, filename)
-                if os.path.isfile(file_path):
-                    os.remove(file_path)
+        if form.existing_template.data != "---":
+            model.image_path = url_for(
+                "static",
+                filename="images/menu_templates/" + form.existing_template.data,
+            )
 
-            file = request.files["template"]
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(template_folder, filename))
-
-            if is_created:
-                flash(f"Menu_template was successfully created!", "success")
-            else:
-                flash(f"Menu_template was successfully updated!", "success")
-
+        db.session.commit()
         return super(MenuAdminView, self).on_model_change(form, model, is_created)
 
     def on_model_delete(self, model):
         try:
-            template_folder = os.path.join("app", "static", "images", "menu_templates")
-
-            for filename in os.listdir(template_folder):
-                file_path = os.path.join(template_folder, filename)
-                if os.path.isfile(file_path):
-                    os.remove(file_path)
+            file_path = "app" + model.image_path
+            if os.path.isfile(file_path):
+                os.remove(file_path)
 
             db.session.delete(model)
             db.session.commit()
