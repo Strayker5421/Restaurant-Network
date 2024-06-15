@@ -17,6 +17,7 @@ from wtforms.fields import SelectField
 from markupsafe import Markup
 from app.admin_panel import bp
 from flask_admin import expose, BaseView
+import subprocess
 
 
 class MyModelView(ModelView):
@@ -27,11 +28,12 @@ class MyModelView(ModelView):
         return redirect(url_for("auth.login"))
 
 
-class CustomView(BaseView):
+"""class CustomView(BaseView):
     @expose("/")
     def index(self):
         data = {"name": "John", "age": 30, "email": "john@example.com"}
         return self.render("custom_view.html", data=data)
+"""
 
 
 class RestaurantForm(FlaskForm):
@@ -78,6 +80,17 @@ class RestaurantAdmin(ModelView):
 
             related_menus = Menu.query.filter_by(restaurant_id=model.id).all()
             for menu in related_menus:
+                restaurant_name, menu_name = set_to_low_register(model.name, menu.name)
+                subprocess.run(
+                    [
+                        "docker-compose",
+                        "-f",
+                        "docker-compose-menu.yml",
+                        "--project-name",
+                        f"menu-{restaurant_name}-{menu_name}",
+                        "down",
+                    ]
+                )
                 qr_code_dir_menu = os.path.join("app", "static", "images", "qr_code")
                 menu_qr_filename = f"{menu.name}_qr_code.png"
                 full_image_path_menu = os.path.join(qr_code_dir_menu, menu_qr_filename)
@@ -97,7 +110,17 @@ class RestaurantAdmin(ModelView):
         return super(RestaurantAdmin, self).on_model_delete(model)
 
     def on_model_change(self, form, model, is_created):
-        if "photo" in request.files:
+        if (
+            "photo" in request.files
+            and request.files.getlist("photo")[0].filename != ""
+        ):
+            new_photos = request.files.getlist("photo")[:3]
+            new_images_paths = []
+
+            for photo in new_photos:
+                if photo.filename != "":
+                    new_images_paths.append(save_image(photo, "restaurants/")[0])
+
             if model.images:
                 for old_image_path in model.images:
                     full_old_path = os.path.join(
@@ -110,17 +133,10 @@ class RestaurantAdmin(ModelView):
                     if os.path.exists(full_old_path):
                         os.remove(full_old_path)
 
-            photo = request.files.getlist("photo")[:3]
-            images_paths_raw = []
-            for p in photo:
-                if p.filename != "":
-                    images_paths_raw.append(save_image(p, "restaurants/"))
-
-            images_paths = []
-            for image_path in images_paths_raw:
-                images_paths.append(image_path[0])
-
-            model.images = images_paths
+            model.images = new_images_paths
+        else:
+            if not is_created:
+                model.images = Restaurant.query.get(model.id).images
 
         if is_created:
             flash(f"Restaurant {model.name} was successfully created!", "success")
@@ -207,6 +223,19 @@ class UserAdmin(ModelView):
 
                 related_menus = Menu.query.filter_by(restaurant_id=restaurant.id).all()
                 for menu in related_menus:
+                    restaurant_name, menu_name = set_to_low_register(
+                        restaurant.name, menu.name
+                    )
+                    subprocess.run(
+                        [
+                            "docker-compose",
+                            "-f",
+                            "docker-compose-menu.yml",
+                            "--project-name",
+                            f"menu-{restaurant_name}-{menu_name}",
+                            "down",
+                        ]
+                    )
                     qr_code_dir_menu = os.path.join(
                         "app", "static", "images", "qr_code"
                     )
@@ -276,8 +305,23 @@ class MenuAdmin(ModelView):
             if os.path.exists(qr_code_path):
                 os.remove(qr_code_path)
 
+            restaurant_name, menu_name = set_to_low_register(
+                model.restaurant.name, model.name
+            )
+            subprocess.run(
+                [
+                    "docker-compose",
+                    "-f",
+                    "docker-compose-menu.yml",
+                    "--project-name",
+                    f"menu-{restaurant_name}-{menu_name}",
+                    "down",
+                ]
+            )
+
             db.session.delete(model)
             db.session.commit()
+
             flash(f"Menu {model.name} was successfully deleted!", "success")
 
         except Exception as e:
@@ -290,7 +334,7 @@ class MenuAdmin(ModelView):
 admin.add_view(UserAdmin(User, db.session))
 admin.add_view(RestaurantAdmin(Restaurant, db.session))
 admin.add_view(MenuAdmin(Menu, db.session))
-admin.add_view(CustomView(name="Custom", endpoint="custom"))
+# admin.add_view(CustomView(name="Custom", endpoint="custom"))
 
 
 def save_image(images, path):
@@ -305,3 +349,9 @@ def save_image(images, path):
         images.save("app/static/images/" + path + filename)
         images_paths.append(url_for("static", filename="images/" + path + filename))
     return images_paths
+
+
+def set_to_low_register(restaurant_name, menu_name):
+    restaurant_name = restaurant_name.replace(" ", "-").lower()
+    menu_name = menu_name.split(" ")[0].lower()
+    return restaurant_name, menu_name

@@ -62,7 +62,8 @@ class Menu(db.Model):
         default=datetime.now,
     )
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.id"))
-    PORT = 8000
+    APP_PORT = 8000
+    DB_PORT = 5433
 
     def check_subscription(self):
         new_status = datetime.now() < self.expiration_date
@@ -80,11 +81,11 @@ class Menu(db.Model):
             db.session.commit()
 
             if self.status:
-                Menu.PORT += 1
+                Menu.APP_PORT += 1
+                Menu.DB_PORT += 1
                 self.start_container(
                     self.name.replace(" ", "-").lower(),
                     self.restaurant.name.split(" ")[0].lower(),
-                    self.PORT,
                 )
             else:
                 self.stop_container(
@@ -119,13 +120,15 @@ class Menu(db.Model):
         except Exception as e:
             return None
 
-    def start_container(self, menu_name, restaurant_name, port=PORT):
+    def start_container(self, menu_name, restaurant_name):
         volume_name = "static"
         project_name = f"menu-{restaurant_name}-{menu_name}"
         menu_container_name = f"menu-{restaurant_name}-{menu_name}-app"
         menu_db_container_name = f"menu-{restaurant_name}-{menu_name}-db"
+        os.environ["MENU_NET_NAME"] = f"{restaurant_name}_{menu_name}"
 
-        os.environ["APP_PORT"] = str(port)
+        os.environ["APP_PORT"] = str(Menu.APP_PORT)
+        os.environ["DB_PORT"] = str(Menu.DB_PORT)
 
         env = Environment(loader=FileSystemLoader(current_app.config["TEMPLATE_DIR"]))
 

@@ -66,15 +66,14 @@ class DishAdmin(ModelView):
     column_searchable_list = ["id", "name", "ingredients", "section", "price"]
 
     def images_formatter(view, context, model, name):
-        images_html = ""
-        for image in model.image:
+        if model.image:
             image_style = (
                 'style="max-width:100px; max-height:100px; width:auto; height:auto;"'
             )
-            images_html += f'<img src="{image}" {image_style}/>'
-        return Markup(images_html)
+            return Markup(f'<img src="{model.image}" {image_style}/>')
+        return ""
 
-    column_formatters = {"images": images_formatter}
+    column_formatters = {"image": images_formatter}
 
     def on_model_delete(self, model):
         try:
@@ -96,7 +95,7 @@ class DishAdmin(ModelView):
         return super(DishAdmin, self).on_model_delete(model)
 
     def on_model_change(self, form, model, is_created):
-        if "photo" in request.files:
+        if "photo" in request.files and request.files.get("photo").filename != "":
             if model.image:
                 old_image_path = model.image
                 full_old_path = os.path.join(
@@ -106,14 +105,12 @@ class DishAdmin(ModelView):
                     os.remove(full_old_path)
 
             photo = request.files.get("photo")
-            images_paths_raw = []
             if photo.filename != "":
-                images_paths_raw.append(save_image(photo, "dishes/"))
-
-            images_paths = []
-            images_paths.append(images_paths_raw[0][0])
-
-            model.image = images_paths[0]
+                new_image_path = save_image(photo, "dishes/")[0]
+                model.image = new_image_path
+        else:
+            if not is_created:
+                model.image = Dish.query.get(model.id).image
 
         if is_created:
             flash(f"Dish {model.name} was successfully created!", "success")
@@ -156,6 +153,13 @@ class MenuAdminView(ModelView):
 
     column_formatters = {"Template": image_path_formatter}
 
+    def create_model(self, form):
+        if Menu.query.first():
+            flash("Menu template already exists, you can edit it!", "error")
+            return False
+        else:
+            return super(MenuAdminView, self).create_model(form)
+
     def on_model_change(self, form, model, is_created):
         if Menu.query.first():
             model = Menu.query.first()
@@ -178,20 +182,9 @@ class MenuAdminView(ModelView):
         db.session.commit()
         return super(MenuAdminView, self).on_model_change(form, model, is_created)
 
-    def on_model_delete(self, model):
-        try:
-            file_path = "app" + model.image_path
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-
-            db.session.delete(model)
-            db.session.commit()
-            flash(f"Template  was successfully deleted!", "success")
-        except Exception as e:
-            db.session.rollback()
-            flash(f"An unexpected error occurred: {str(e)}", "error")
-
-        return super(MenuAdminView, self).on_model_delete(model)
+    def delete_model(self, model):
+        flash("Menu template cannot be deleted!", "error")
+        return False
 
 
 admin.add_view(DishAdmin(Dish, db.session))
