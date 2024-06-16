@@ -1,0 +1,40 @@
+services:
+  app:
+    image: ir0h/resos_menu
+    container_name: {{ menu_container_name }}
+    ports:
+      - ${APP_PORT}:80
+    environment:
+      DATABASE_URL: postgresql://postgres:20453843@{{ menu_db_container_name }}:5432/resos_menu_db
+      ADMIN_TOKEN: {{ admin_token }}
+    restart: always
+    depends_on:
+      - resos_menu_postgres
+    networks:
+      - menu_net
+    volumes:
+      - type: volume
+        source: {{ volume_name }}
+        target: /app/app/static
+
+  resos_menu_postgres:
+    image: postgres
+    container_name: {{ menu_db_container_name }}
+    ports:
+      - ${DB_PORT}:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 20453843
+      POSTGRES_DB: resos_menu_db
+    networks:
+      - menu_net
+
+volumes:
+  {{ volume_name }}:
+    external: false
+  postgres-data:
+
+networks:
+  menu_net:
+    external: true

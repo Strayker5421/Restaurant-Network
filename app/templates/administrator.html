@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/assets/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+    <title>Administrator Interface</title>
+</head>
+<body>
+
+    <div class="tabs">
+        <a role="button" href="{{ url_for('auth.login') }}"><button>Login</button></a>
+        <button onclick="openTab('session')">Session</button>
+        <button onclick="openTab('restaurant')">Restaurant</button>
+        <button onclick="openTab('menu')">Menu</button>
+        <button onclick="openTab('users')">Users</button>
+    </div>
+
+    <div id="session" class="tab-content">
+        <div class="sub-tabs" id="sessionSubTabs">
+            <button onclick="openSubTab('deleteAllData')">Delete Session</button>
+        </div>
+
+        <div id="deleteAllData" class="sub-tab-content">
+            <form id="deleteAllDataForm">
+                <button onclick="confirmDeleteAllData()">Delete All Data</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="restaurant" class="tab-content">
+        <div class="sub-tabs" id="restaurantSubTabs">
+            <button onclick="openSubTab('viewRestaurants')">View restaurants</button>
+            <button onclick="openSubTab('searchRestaurant')">Search restaurant</button>
+            <button onclick="openSubTab('changeStatusRestaurant')">Change status restaurant</button>
+            <button onclick="openSubTab('deleteRestaurant')">Delete restaurant</button>
+            <button onclick="openSubTab('addRestaurant')">Add restaurant</button>
+            <button onclick="openSubTab('changeRestaurantName')">Change restaurant name</button>
+            <button onclick="openSubTab('changeRestaurantImage')">Change restaurant image</button>
+        </div>
+
+        <div id="viewRestaurants" class="sub-table-content">
+            <form id = "viewRestaurantsForm">
+                <input type="number" id="UserIdInputView" placeholder="Enter user id" oninput="loadRestaurant()" required>
+                <div id="viewRestaurantContainer"></div>
+            </form>
+        </div>
+
+        <div id="searchRestaurant" class="sub-table-content">
+            <form id="searchForm">
+                <input type="number" id="UserIdInputSearch" placeholder="Enter user id" oninput="searchRestaurants()" required>
+                <input type="text" id="searchQuery" placeholder="Search by restaurants parameters" oninput="searchRestaurants()" required>
+            </form>
+
+            <div id="searchResults"></div>
+        </div>
+
+        <div id="changeRestaurantName" class="sub-tab-content">
+            <form id="changeRestaurantNameForm">
+                <label for="RestaurantIdToModify">Restaurant ID:</label>
+                <input type="number" id="RestaurantIdToModify" placeholder="Enter restaurant ID" required min="1">
+
+                <label for="NewRestaurantName">New Restaurant Name:</label>
+                <input type="text" id="NewRestaurantName" placeholder="Enter new restaurant name" required>
+
+                <input type="submit" value="Change Restaurant Name">
+            </form>
+        </div>
+
+        <div id="changeRestaurantImage" class="sub-tab-content">
+            <form id="changeRestaurantImageForm">
+                <label for="RestaurantIdToModifyImage">Restaurant ID:</label>
+                <input type="number" id="RestaurantIdToModifyImage" placeholder="Enter restaurant ID" required min="1">
+
+                <label for="NewRestaurantImage">New Restaurant Image (up to 3 images):</label>
+                <input type="file" id="NewRestaurantImage" name="New_Restaurant_image" accept="image/*" multiple>
+                <small id="imageError" style="color: red;"></small>
+
+                <input type="submit" value="Change Restaurant Image">
+            </form>
+        </div>
+
+            <div id="changeStatusRestaurant" class="sub-tab-content">
+                <form id="changeStatusRestaurantForm">
+                    <label for="RestaurantId">Restaurant ID:</label>
+                    <input type="number" id="RestaurantId" placeholder="Enter Restaurant ID" required min="1">
+
+                    <label for="newStatus">New Status:</label>
+                    <select id="newStatus" required>
+                        <option value="Open">Open</option>
+                        <option value="Close">Close</option>
+                    </select>
+
+                    <input type="submit" value="Change Status">
+                </form>
+            </div>
+            <div id="deleteRestaurant" class="sub-tab-content">
+                <form id="deleteRestaurantForm">
+                    <label for="RestaurantIdToDelete">Restaurant ID:</label>
+                    <input type="number" id="RestaurantIdToDelete" placeholder="Enter Restaurant ID" required min="1">
+                    <button type="submit">Delete Restaurant</button>
+                    <button type="button" onclick="confirmDeleteAllRestaurants()">Delete All Restaurants</button>
+                </form>
+
+                <form id="deleteUserRestaurantsForm">
+                    <label for="UserIdToDeleteRestaurants">User ID:</label>
+                    <input type="number" id="UserIdToDeleteRestaurants" placeholder="Enter User ID" required min="1">
+                    <button type="button" onclick="confirmDeleteUserRestaurants()">Delete User's Restaurants</button>
+                </form>
+            </div>
+
+            <div id="addRestaurant" class="sub-tab-content">
+                <form id="addRestaurantForm" method="post" enctype="multipart/form-data">
+                    <label for="UserId">User Id:</label>
+                    <input type="number" id="UserId" placeholder="Enter User ID" required min="1">
+
+                    <label for="RestaurantName">Restaurant Name:</label>
+                    <input type="text" id="RestaurantName" placeholder="Enter restaurant name" required>
+
+                    <label for="Status">Status:</label>
+                    <select id="Status" required>
+                        <option value="Open">Open</option>
+                        <option value="Close">Close</option>
+                    </select>
+
+                    <label for="RestaurantImage">Restaurant Image (up to 3 images):</label>
+                    <input type="file" id="RestaurantImage" name="Restaurant_image" accept="image/*" multiple>
+                    <small id="imageError" style="color: red;"></small>
+
+                    <div id="qrCodeContainerRestaurant"></div>
+
+                    <input type="submit" value="Add Restaurant">
+                </form>
+            </div>
+    </div>
+
+    <div id="menu" class="tab-content">
+        <div class="sub-tabs" id="menuSubTabs">
+            <button onclick="openSubTab('addMenu')">Add menu</button>
+            <button onclick="openSubTab('viewMenu')">View menu</button>
+            <button onclick="openSubTab('searchMenu')">Search menu</button>
+            <button onclick="openSubTab('changeStatusMenu')">Change status menu</button>
+            <button onclick="openSubTab('deleteMenu')">Delete menu</button>
+            <button onclick="openSubTab('changeMenuName')">Change menu name</button>
+        </div>
+
+        <div id="viewMenu" class="sub-table-content">
+            <form id = "viewMenuForm">
+            <input type="number" id="restaurantIdInputView" placeholder="Enter restaurant number" oninput="loadMenus()" required>
+            <div id="viewMenuContainer"></div>
+            </form>
+        </div>
+
+        <div id="searchMenu" class="sub-table-content">
+            <form id="searchMenuForm">
+                <input type="number" id="restaurantIdInputSearch" placeholder="Enter restaurant number" oninput="searcMenus()" required>
+                <input type="text" id="searchQueryMenu" placeholder="Search menu parameters" oninput="searchMenus()" required>
+                <input type="submit" value="Search" style="display: none;">
+            </form>
+
+            <div id="searchResultsMenu"></div>
+        </div>
+
+            <div id="changeStatusMenu" class="sub-tab-content">
+                <form id="changeStatusMenuForm">
+                    <label for="MenuId">Menu ID:</label>
+                    <input type="number" id="MenuId" placeholder="Enter menu ID" required min="1">
+
+                    <label for="newStatusMenu">New Status:</label>
+                    <select id="newStatusMenu" required>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+
+                    <input type="submit" value="Change Status">
+                </form>
+            </div>
+
+            <div id="deleteMenu" class="sub-tab-content">
+                <form id="deleteMenuForm">
+                    <label for="MenuIdToDelete">Menu ID:</label>
+                    <input type="number" id="MenuIdToDelete" placeholder="Enter menu ID" required min="1">
+                    <button type="submit">Delete Menu</button>
+                    <button type="button" onclick="confirmDeleteAllMenu()">Delete all menu</button>
+
+                    <label for="RestaurantIdToDeleteMenus">Restaurant ID:</label>
+                    <input type="number" id="RestaurantIdToDeleteMenus" placeholder="Enter Restaurant ID" required min="1">
+                    <button type="button" onclick="confirmDeleteAllMenuForRestaurant()">Delete all menu for restaurant</button>
+
+                    <label for="UserIdToDeleteMenusFor">User ID:</label>
+                    <input type="number" id="UserIdToDeleteMenusFor" placeholder="Enter User ID" required min="1">
+                    <button type="button" onclick="confirmDeleteAllMenuForUser()">Delete all menu for user</button>
+                </form>
+            </div>
+
+            <div id="addMenu" class="sub-tab-content">
+                <form id="addMenuForm">
+                    <label for="RestaurantIdForMenu">Restaurant ID:</label>
+                    <input type="text" id="RestaurantIdForMenu" placeholder="Enter restaurant ID" required>
+
+                    <label for="MenuName">Menu Name:</label>
+                    <input type="text" id="MenuName" placeholder="Enter menu name" required>
+
+                    <label for="subscriptionLength">Subscription Length:</label>
+                    <select id="subscriptionLength">
+                        <option value="None">None</option>
+                        <option value="5 minutes">5 minutes</option>
+                        <option value="1 hour">1 hour</option>
+                        <option value="1 day">1 day</option>
+                    </select>
+
+                    <label for="menuTemplateImage">Menu Template:</label>
+                    <input type="file" id="menuTemplateImage" accept="image/*">
+
+                    <div id="qrCodeContainerMenus"></div>
+
+                    <input type="submit" value="Add menu">
+                </form>
+            </div>
+
+        <div id="changeMenuName" class="sub-tab-content">
+            <form id="changeMenuNameForm">
+                <label for="MenuIdToModify">Menu ID:</label>
+                <input type="number" id="MenuIdToModify" placeholder="Enter menu ID" required min="1">
+
+                <label for="NewMenuName">New Menu Name:</label>
+                <input type="text" id="NewMenuName" placeholder="Enter new menu name" required>
+
+                <input type="submit" value="Change Menu Name">
+            </form>
+        </div>
+    </div>
+
+        <div id="users" class="tab-content">
+            <div class="sub-tabs" id="usersSubTabs">
+                <button onclick="openSubTab('addUser')">Add</button>
+                <button onclick="openSubTab('deleteUser')">Delete</button>
+            </div>
+
+            <div id="addUser" class="sub-tab-content">
+                <form id="addUserForm">
+                    <label for="UserName">User name:</label>
+                    <input type="text" id="UserName" placeholder="Enter user name" required>
+
+                    <label for="UserEmail">Email:</label>
+                    <input type="email" id="UserEmail" placeholder="Enter email" required>
+
+                    <label for="UserPassword">Password:</label>
+                    <input type="password" id="UserPassword" placeholder="Enter password" required>
+
+                    <label for="role">Role:</label>
+                    <select id="role" required>
+                        <option value="Active">Administrator</option>
+                        <option value="Inactive">User</option>
+                    </select>
+
+                    <input type="submit" value="Add user">
+                </form>
+            </div>
+
+            <div id="deleteUser" class="sub-tab-content">
+                <form id="deleteUserForm">
+                    <label for="UserIdToDelete">User ID to Delete:</label>
+                    <input type="text" id="UserIdToDelete" placeholder="Enter user ID" required min="1">
+                    <button type="submit">Delete user</button>
+                </form>
+            </div>
+        </div>
+
+    <script>
+
+const commonOptions = {
+    positionClass: 'toast-top',
+    progressBar: true,
+    timeOut: 3000,
+    tapToDismiss: false,
+    newestOnTop: false,
+    showDuration: 300,
+    hideDuration: 1000,
+    titleClass: 'toast-title',
+    messageClass: 'toast-message'
+};
+
+function openSubTab(subTabName) {
+    var subTab = document.getElementById(subTabName);
+    var subTabs = document.getElementsByClassName("sub-tab-content");
+    var subTables = document.getElementsByClassName("sub-table-content");
+
+    for (var i = 0; i < subTabs.length; i++) {
+        if (subTabs[i] !== subTab) {
+            subTabs[i].style.display = "none";
+        }
+    }
+
+     for (var i = 0; i < subTables.length; i++) {
+        if (subTables[i] !== subTab) {
+            subTables[i].style.display = "none";
+        }
+    }
+
+    subTab.style.display = subTab.style.display === "block" ? "none" : "block";
+}
+
+function openTab(tabName) {
+    var tab = document.getElementById(tabName);
+    var tabs = document.getElementsByClassName("tab-content");
+    var subTables = document.getElementsByClassName("sub-table-content");
+
+    for (var i = 0; i < tabs.length; i++) {
+        if (tabs[i] !== tab) {
+            tabs[i].style.display = "none";
+        }
+    }
+
+      for (var i = 0; i < subTables.length; i++) {
+        if (subTables[i] !== tab) {
+            subTables[i].style.display = "none";
+        }
+    }
+
+    tab.style.display = window.getComputedStyle(tab).display === "block" ? "none" : "block";
+}
+
+function confirmDeleteAllData() {
+    event.preventDefault();
+    var confirmDelete = confirm("Are you sure you want to delete all data?");
+
+    if (confirmDelete) {
+        axios.post('/delete_all_data')
+            .then(response => {
+                console.log(response.data);
+                toastr.success('All data successfully deleted', 'Success', {
+                    ...commonOptions,
+                    iconClass: 'toast-success-rectangle'
+                });
+            })
+            .catch(error => {
+                console.error(error.response.data);
+                toastr.error('Error deleting all data', 'Error', {
+                    ...commonOptions,
+                    iconClass: 'toast-error-rectangle'
+                });
+            });
+    }
+}
+
+document.getElementById('changeStatusRestaurant').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const RestaurantId = document.getElementById('RestaurantId').value;
+    const newStatus = document.getElementById('newStatus').value;
+
+    changeStatusRestaurant(RestaurantId, newStatus);
+});
+
+function changeStatusRestaurant(RestaurantId, newStatus) {
+    axios.post('/change_status_restaurant', {
+        RestaurantId: RestaurantId,
+        newStatus: newStatus
+    })
+    .then(response => {
+        console.log(response.data);
+        toastr.success('Restaurant status successfully changed', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error changing restaurant status:', error);
+        toastr.error('Error changing restaurant status', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+document.getElementById('deleteRestaurant').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const RestaurantIdToDelete = document.getElementById('RestaurantIdToDelete').value;
+    deleteRestaurant(RestaurantIdToDelete);
+});
+
+function confirmDeleteAllRestaurants() {
+    debugger;
+    var confirmDelete = confirm("Are you sure you want to delete all restaurants?");
+    if (confirmDelete) {
+        deleteAllRestaurants();
+    }
+}
+
+function deleteAllRestaurants() {
+    axios.post('/delete_all_restaurants')
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All restaurants successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting all restaurants', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+function confirmDeleteUserRestaurants() {
+    var userId = document.getElementById('UserIdToDeleteRestaurants').value;
+    var confirmDelete = confirm("Are you sure you want to delete all restaurants for this user?");
+    if (confirmDelete) {
+        deleteUserRestaurants(userId);
+    }
+}
+
+function deleteUserRestaurants(userId) {
+    axios.post(`/delete_all_restaurants_user/${userId}`)
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All restaurants for this user successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting restaurants for this user', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+function deleteRestaurant(RestaurantIdToDelete) {
+    axios.post('/delete_restaurant', {
+        RestaurantId: RestaurantIdToDelete
+    })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('Restaurant successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error('Error deleting restaurant:', error.response.data);
+            toastr.error('Error deleting restaurant', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+document.getElementById('changeRestaurantNameForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const RestaurantId = document.getElementById('RestaurantIdToModify').value;
+    const newRestaurantName = document.getElementById('NewRestaurantName').value;
+
+    changeRestaurantName(RestaurantId, newRestaurantName);
+});
+
+function changeRestaurantName(RestaurantId, newRestaurantName) {
+    axios.post('/change_restaurant_name', {
+        RestaurantId : RestaurantId,
+        newRestaurantName : newRestaurantName
+    })
+    .then(response => {
+        console.log(response.data);
+        toastr.success('Restaurant name successfully changed', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error changing restaurant name:', error);
+        toastr.error('Error changing restaurant name', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+document.getElementById('changeRestaurantImageForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const RestaurantId = document.getElementById('RestaurantIdToModifyImage').value;
+    const newRestaurantImage = document.getElementById('NewRestaurantImage').files;
+
+    if (newRestaurantImage.length > 3) {
+        toastr.error('Please select up to 3 images.', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('RestaurantId', RestaurantId);
+
+    for (const file of newRestaurantImage) {
+        formData.append('NewRestaurantImage', file);
+    }
+
+    changeRestaurantImage(formData);
+});
+
+function changeRestaurantImage(formData) {
+    axios.post('/change_restaurant_image', formData)
+    .then(response => {
+        console.log(response.data);
+        toastr.success('Restaurant image successfully changed', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error changing restaurant image:', error);
+        toastr.error('Error changing restaurant image', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+document.getElementById('addRestaurantForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const RestaurantName = document.getElementById('RestaurantName').value;
+    const Status = document.getElementById('Status').value;
+    const User_id = document.getElementById('UserId').value;
+    const RestaurantImageFiles = document.getElementById('RestaurantImage').files;
+
+    if (RestaurantImageFiles.length > 3) {
+        toastr.error('Please select up to 3 images.', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('RestaurantName', RestaurantName);
+    formData.append('Status', Status);
+    formData.append('UserID', User_id);
+
+    for (const file of RestaurantImageFiles) {
+        formData.append('RestaurantImage', file);
+    }
+
+    addRestaurant(formData);
+});
+
+function addRestaurant(formData) {
+    const qrCodeContainerId = 'qrCodeContainerRestaurant';
+    const qrCodeContainer = document.getElementById(qrCodeContainerId);
+    qrCodeContainer.innerHTML = '';
+    axios.post('/add_restaurant', formData)
+        .then(response => {
+            console.log(response.data);
+            toastr.success('Restaurant successfully added', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+            const qrCodeImage = response.data.qr_code_path;
+            displayQRCode(qrCodeImage, qrCodeContainerId);
+        })
+        .catch(error => {
+            console.error('Error adding restaurant:', error);
+            toastr.error('Error adding restaurant', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+function displayQRCode(qrCodeImage, containerId) {
+    const img = document.createElement('img');
+    img.src = qrCodeImage;
+
+    const qrCodeContainer = document.getElementById(containerId);
+    if (qrCodeContainer) {
+        qrCodeContainer.innerHTML = '';
+        qrCodeContainer.appendChild(img);
+    } else {
+        console.error(`Element with id "${containerId}" not found.`);
+    }
+}
+
+document.getElementById('changeStatusMenuForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const MenuId = document.getElementById('MenuId').value;
+    const newStatus = document.getElementById('newStatusMenu').value;
+
+    changeStatusMenu(MenuId, newStatus);
+});
+
+function changeStatusMenu(MenuId, newStatus) {
+    axios.post('/change_status_menu', {
+        MenuId: MenuId,
+        newStatus: newStatus
+    })
+    .then(response => {
+        console.log(response.data);
+        toastr.success('Menu status successfully changed', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error changing menu status:', error);
+        toastr.error('Error changing menu status', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+document.getElementById('deleteMenuForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const MenuIdToDelete = document.getElementById('MenuIdToDelete').value;
+    DeleteMenu(MenuIdToDelete);
+});
+
+function DeleteMenu(MenuIdToDelete) {
+    axios.post('/delete_menu', {
+        MenuIdToDelete: MenuIdToDelete
+    })
+    .then(response => {
+        console.log('Response:', response.data);
+        toastr.success('Menu successfully deleted', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error deleting menu:', error.response.data);
+        toastr.error('Error deleting menu', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+function confirmDeleteAllMenuForRestaurant() {
+    var restaurantId = document.getElementById('RestaurantIdToDeleteMenus').value;
+    if (!restaurantId) {
+        toastr.error('Restaurant ID is required', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+        return;
+    }
+    var confirmDelete = confirm("Are you sure you want to delete all menus for this restaurant?");
+    if (confirmDelete) {
+        deleteAllMenuForRestaurant(restaurantId);
+    }
+}
+
+function deleteAllMenuForRestaurant(restaurantId) {
+    axios.post('/delete_all_menu_for_restaurant', { restaurant_id: restaurantId })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All menus for the restaurant successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting all menus for the restaurant', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+function confirmDeleteAllMenuForUser() {
+    var userId = document.getElementById('UserIdToDeleteMenusFor').value;
+    if (!userId) {
+        toastr.error('User ID is required', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+        return;
+    }
+    var confirmDelete = confirm("Are you sure you want to delete all menus for this user?");
+    if (confirmDelete) {
+        deleteAllMenuForUser(userId);
+    }
+}
+
+function deleteAllMenuForUser(userId) {
+    axios.post('/delete_all_menu_for_user', { user_id: userId })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All menus for the user successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting all menus for the user', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+document.getElementById('changeMenuNameForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const MenuId = document.getElementById('MenuIdToModify').value;
+    const NewMenuName = document.getElementById('NewMenuName').value;
+
+    changeMenuName(MenuId, NewMenuName);
+});
+
+function changeMenuName(MenuId, NewMenuName) {
+    axios.post('/change_menu_name', {
+        MenuId: MenuId,
+        NewMenuName: NewMenuName
+    })
+    .then(response => {
+        console.log(response.data);
+        toastr.success('Menu name successfully changed', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error changing menu name:', error);
+        toastr.error('Error changing menu name', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+function confirmDeleteAllMenu() {
+    var confirmDelete = confirm("Are you sure you want to delete all menu?");
+    if (confirmDelete) {
+        deleteAllMenu();
+    }
+}
+
+function deleteAllMenu() {
+    axios.post('/delete_all_menu')
+        .then(response => {
+            console.log(response.data);
+            toastr.success('All menu successfully deleted', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+        })
+        .catch(error => {
+            console.error(error.response.data);
+            toastr.error('Error deleting all menu', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+document.getElementById('addMenuForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const MenuName = document.getElementById('MenuName').value;
+    const SubscriptionLength = document.getElementById('subscriptionLength').value;
+    const RestaurantIdForMenu = document.getElementById('RestaurantIdForMenu').value;
+    const menuTemplateImage = document.getElementById('menuTemplateImage').files[0]; // Исправлено
+
+    AddMenu(MenuName, SubscriptionLength, RestaurantIdForMenu, menuTemplateImage);
+});
+
+function AddMenu(MenuName, SubscriptionLength, RestaurantIdForMenu, menuTemplateImage) {
+    const qrCodeContainerId = 'qrCodeContainerMenus';
+    const qrCodeContainer = document.getElementById(qrCodeContainerId);
+    qrCodeContainer.innerHTML = '';
+
+    const formData = new FormData(); // Используем FormData
+    formData.append('MenuName', MenuName);
+    formData.append('SubscriptionLength', SubscriptionLength);
+    formData.append('RestaurantIdForMenu', RestaurantIdForMenu);
+    formData.append('menuTemplateImage', menuTemplateImage); // Добавляем файл
+
+    axios.post('/add_menu', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(response => {
+            console.log(response.data);
+            toastr.success('Menu successfully added', 'Success', {
+                ...commonOptions,
+                iconClass: 'toast-success-rectangle'
+            });
+            const qrCodeImage = response.data.qr_code_path;
+            displayQRCode(qrCodeImage, qrCodeContainerId);
+        })
+        .catch(error => {
+            console.error('Error add menu:', error);
+            toastr.error('Error adding menu', 'Error', {
+                ...commonOptions,
+                iconClass: 'toast-error-rectangle'
+            });
+        });
+}
+
+
+document.getElementById('addUserForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const username = document.getElementById('UserName').value;
+    const email = document.getElementById('UserEmail').value;
+    const role = document.getElementById('role').value;
+    const password_hash = document.getElementById('UserPassword').value;
+    addUser(username, email, password_hash, role);
+});
+
+function addUser(username, email, password_hash, role) {
+    axios.post('/add_user', {
+        username: username,
+        email: email,
+        password_hash: password_hash,
+        role: role
+    })
+    .then(response => {
+        console.log(response.data);
+        toastr.success('User added successfully', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error adding user:', error);
+        toastr.error('Error adding user', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+document.getElementById('deleteUserForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const user_id = document.getElementById('UserIdToDelete').value;
+    deleteUser(user_id);
+});
+
+function deleteUser(user_id) {
+    axios.post('/delete_user', {
+        user_id: user_id
+    })
+    .then(response => {
+        console.log(response.data);
+        toastr.success('User deleted successfully', 'Success', {
+            ...commonOptions,
+            iconClass: 'toast-success-rectangle'
+        });
+    })
+    .catch(error => {
+        console.error('Error deleting employee:', error.response.data);
+        toastr.error('Error deleting user', 'Error', {
+            ...commonOptions,
+            iconClass: 'toast-error-rectangle'
+        });
+    });
+}
+
+
+function searchRestaurants() {
+    const searchQuery = document.getElementById('searchQuery').value;
+    const user_id = document.getElementById('UserIdInputSearch').value;
+
+    axios.get(`/search_restaurants?user_id=${user_id}&search_query=${searchQuery}`)
+        .then(response => {
+            const restaurants = response.data;
+            const searchResultsContainer = document.getElementById('searchResults');
+            const table = document.createElement('table');
+
+            const columns = ['id', 'name', 'image', 'status'];
+
+            const headerRow = document.createElement('tr');
+            columns.forEach(column => {
+                const th = document.createElement('th');
+                th.textContent = column;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            restaurants.forEach(restaurant => {
+                const row = document.createElement('tr');
+                columns.forEach(column => {
+                    const td = document.createElement('td');
+                    if (column === 'image') {
+                        const imgContainer = document.createElement('div');
+                        restaurant[column].forEach(imageUrl => {
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.style.maxWidth = '300px'
+                            img.style.maxHeight = '300px'
+                            imgContainer.appendChild(img);
+                        });
+                        td.appendChild(imgContainer);
+                    } else {
+                        td.textContent = restaurant[column];
+                    }
+                    row.appendChild(td);
+                });
+                table.appendChild(row);
+            });
+
+            searchResultsContainer.innerHTML = '';
+            searchResultsContainer.appendChild(table);
+        })
+        .catch(error => {
+            console.error('Error searching restaurants:', error);
+        });
+}
+
+
+function loadRestaurant() {
+    const user_id = document.getElementById('UserIdInputView').value;
+
+    axios.get(`/fetch_restaurants/${user_id}`)
+        .then(response => {
+            const restaurants = response.data;
+            const restaurantsContainer = document.getElementById('viewRestaurantContainer');
+            const table = document.createElement('table');
+
+            const columns = ['id', 'name', 'image', 'status'];
+
+            const headerRow = document.createElement('tr');
+            columns.forEach(column => {
+                const th = document.createElement('th');
+                th.textContent = column;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            restaurants.forEach(restaurant => {
+                const row = document.createElement('tr');
+                columns.forEach(column => {
+                    const td = document.createElement('td');
+                    if (column === 'image') {
+                        const imgContainer = document.createElement('div');
+                        if (restaurant[column].length > 0) {
+                            restaurant[column].forEach(imageUrl => {
+                                const img = document.createElement('img');
+                                img.src = imageUrl;
+                                img.style.maxWidth = '300px';
+                                img.style.maxHeight = '300px';
+                                imgContainer.appendChild(img);
+                            });
+                        } else {
+                            const noImageText = document.createElement('span');
+                            noImageText.textContent = 'No photo';
+                            imgContainer.appendChild(noImageText);
+                        }
+                        td.appendChild(imgContainer);
+                    } else {
+                        td.textContent = restaurant[column];
+                    }
+                    row.appendChild(td);
+                });
+                table.appendChild(row);
+            });
+
+            restaurantsContainer.innerHTML = '';
+            restaurantsContainer.appendChild(table);
+        })
+        .catch(error => {
+            console.error('Error fetching restaurant:', error);
+        });
+}
+
+
+function searchMenus() {
+
+    const restaurantId = document.getElementById('restaurantIdInputSearch').value;
+    const searchQuery = document.getElementById('searchQueryMenu').value;
+
+    axios.get(`/search_menus?restaurant_id=${restaurantId}&search_query=${searchQuery}`)
+        .then(response => {
+            const menus = response.data;
+            const searchResultsContainer = document.getElementById('searchResultsMenu');
+            const table = document.createElement('table');
+            table.border = '1';
+
+            const columns = ['id', 'name', 'status'];
+            const headerRow = document.createElement('tr');
+            columns.forEach(column => {
+                const th = document.createElement('th');
+                th.textContent = column;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            menus.forEach(menu => {
+                const row = document.createElement('tr');
+                columns.forEach(column => {
+                    const td = document.createElement('td');
+                    td.textContent = menu[column];
+                    row.appendChild(td);
+                });
+                table.appendChild(row);
+            });
+
+            searchResultsContainer.innerHTML = '';
+            searchResultsContainer.appendChild(table);
+        })
+        .catch(error => {
+            console.error('Error searching menus:', error);
+        });
+}
+
+function loadMenus() {
+    const restaurantId = document.getElementById('restaurantIdInputView').value;
+
+    axios.get(`/fetch_menus/${restaurantId}`)
+        .then(response => {
+            const menus = response.data;
+            const viewMenuContainer = document.getElementById('viewMenuContainer');
+
+            const table = document.createElement('table');
+            table.border = '1';
+
+            const columns = ['id', 'name', 'status'];
+            const headerRow = document.createElement('tr');
+            columns.forEach(column => {
+                const th = document.createElement('th');
+                th.textContent = column;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            menus.forEach(menu => {
+                const row = document.createElement('tr');
+                columns.forEach(column => {
+                    const td = document.createElement('td');
+                    td.textContent = menu[column];
+                    row.appendChild(td);
+                });
+                table.appendChild(row);
+            });
+
+            viewMenuContainer.innerHTML = '';
+            viewMenuContainer.appendChild(table);
+        })
+        .catch(error => {
+            console.error('Error fetching menus:', error);
+        });
+}
+    </script>
+</body>
+</html>

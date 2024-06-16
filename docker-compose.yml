@@ -1,0 +1,31 @@
+services:
+  app:
+    image: ir0h/resos
+    container_name: res_app
+    ports:
+      - 10000:80
+    environment:
+      DATABASE_URL: postgresql://postgres:20453843@resos_postgres:5432/resos_db
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - static-volume:/app/app/static
+      - type: volume
+        source: migrations
+        target: /app/migrations
+    depends_on:
+      - resos_postgres
+
+  resos_postgres:
+    image: postgres
+    container_name: res_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 20453843
+      POSTGRES_DB: resos_db
+
+volumes:
+  postgres-data:
+  migrations:
+  static-volume:

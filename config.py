@@ -10,6 +10,8 @@ class Config(object):
     SECRET_KEY = os.getenv("SECRET_KEY", "you-will-never-guess")
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    DAEMON_INTERVAL = 20
+    TEMPLATE_DIR = "/app/app/templates"
 
     MAIL_SERVER = os.getenv("MAIL_SERVER")
     MAIL_PORT = int(os.getenv("MAIL_PORT", 25))
@@ -17,5 +19,3 @@ class Config(object):
     MAIL_USERNAME = os.getenv("MAIL_USERNAME")
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
     ADMINS = ["dmitrys.test@yandex.ru"]
-
-    POSTS_PER_PAGE = 10
